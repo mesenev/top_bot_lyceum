@@ -14,7 +14,8 @@ def _get_top(bot, update, **kwargs):
     global last_update
     local_time = _current_time()
     checkpass = kwargs['checkpass'] if 'checkpass' in kwargs else False
-
+    if update.message.from_user.id in CONTRIBUTORS:
+        checkpass = True
     if not checkpass and local_time.hour < 6 or local_time.hour > 23:
         answ = random.choice(NIGHTTIME_MESSAGES)
         return answ
