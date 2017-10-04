@@ -1,8 +1,10 @@
 import random
 import re
+import datetime
 import requests
-from config import *
 
+from config import SESSION_ID, CUPS_OF
+from config_default import NUMBER_OF_KIDS, TIMEZONE, CONTRIBUTORS, COOLDOWN_FOR_LIST, DATA_URL
 last_update = datetime.datetime.now() - datetime.timedelta(hours=24)
 
 
@@ -42,7 +44,7 @@ def _create_top(kids_list):
     i = 0
     j = 0
     message = '{} {}:\n'.format(_current_time().strftime("%B %d, %H:%M"), random.choice(HEADERS))
-    while i < (NUMBER_OF_KIDS):
+    while i < NUMBER_OF_KIDS:
         message += '{}: {} {}\n'.format(TITLES_LIST[j], *kids[i])
         while i + 1 < len(kids) and kids[i][1] == kids[i + 1][1]:
             i += 1
@@ -63,3 +65,40 @@ def _get_data_from_web():
     for _ in range(0, len(kids)):
         result += [(kids[_], marks[_])]
     return result
+
+
+TITLES_LIST = [
+    '👑 Бессменный лидер',
+    '🥈 Неустанный преследователь',
+    '🥉 Один из лучших',
+    'Знает, что делает',
+    'Хороший парень',
+]
+
+AFTERWORDS = [
+    'Удачи ❤',
+    'Этот список заговорён на удачу',
+    'Похоже, кто-то хочет чай ☕',
+    'Мои создатели выпили {} кружки чая ☕'.format(CUPS_OF),
+]
+
+NIGHTTIME_MESSAGES = [
+    'Ночью доставка не работает. Добрых снов, добрый человек. 🚀',
+    'Возвращайтесь на рассвете 🚀',
+]
+
+HEADERS = [
+    'расклады следующие',
+    'отметились',
+    'зал славы',
+]
+
+COOLDOWN_MSGS = [
+    'Терпение, друг',
+    'Ещё рано',
+    'Терпение, терпение',
+]
+PREPARE_MESSAGE = [
+    "Давайте позвоним в яндекс",
+    "Сейчас узнаем"
+]
