@@ -1,7 +1,8 @@
 import datetime
 import logging
+import pytz
 
-CUPS_OF = 9
+CUPS_OF = 17
 BOT_TOKEN = ''
 LOGIN = ''
 PASSWORD = ''
@@ -10,6 +11,7 @@ DATA_URL = ''
 SESSION_ID = ''
 NUMBER_OF_KIDS = 5
 COOLDOWN_FOR_LIST = datetime.timedelta(hours=3)
+TIMEZONE = pytz.timezone('Asia/Vladivostok')
 
 
 def setup_logger(dispatcher):
@@ -22,6 +24,7 @@ def setup_logger(dispatcher):
         logger.warning('Update "%s" caused error "%s"' % (update, err))
 
     dispatcher.add_error_handler(error)
+
 
 TITLES_LIST = [
     '👑 Бессменный лидер',
@@ -54,14 +57,11 @@ COOLDOWN_MSGS = [
     'Ещё рано',
     'Терпение, терпение',
 ]
+PREPARE_MESSAGE =[
+    "Давайте позвоним в яндекс",
+    "Сейчас узнаем"
+]
 
 CONTRIBUTORS = [
     102660981,  # mesenev
-]
-GREETING_TO_CONTRIBUTOR = [
-    'Здравствуй, создатель',
-]
-
-GREETING_TO_SOMEONE = [
-    'Приветствую, {name}',
 ]

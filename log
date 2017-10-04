@@ -1,0 +1,41 @@
+2017-10-04 23:41:40,626 - telegram.ext.dispatcher - ERROR - An uncaught error was raised while processing the update
+Traceback (most recent call last):
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\dispatcher.py", line 270, in process_update
+    handler.handle_update(update, self)
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\commandhandler.py", line 171, in handle_update
+    return self.callback(dispatcher.bot, update, **optional_args)
+TypeError: 'module' object is not callable
+2017-10-04 23:42:32,584 - telegram.ext.dispatcher - ERROR - An uncaught error was raised while processing the update
+Traceback (most recent call last):
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\dispatcher.py", line 270, in process_update
+    handler.handle_update(update, self)
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\commandhandler.py", line 171, in handle_update
+    return self.callback(dispatcher.bot, update, **optional_args)
+TypeError: 'module' object is not callable
+2017-10-04 23:44:39,422 - telegram.ext.dispatcher - ERROR - An uncaught error was raised while processing the update
+Traceback (most recent call last):
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\dispatcher.py", line 270, in process_update
+    handler.handle_update(update, self)
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\messagehandler.py", line 169, in handle_update
+    return self.callback(dispatcher.bot, update, **optional_args)
+TypeError: 'module' object is not callable
+2017-10-04 23:50:38,477 - telegram.ext.dispatcher - ERROR - An uncaught error was raised while processing the update
+Traceback (most recent call last):
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\dispatcher.py", line 270, in process_update
+    handler.handle_update(update, self)
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\messagehandler.py", line 169, in handle_update
+    return self.callback(dispatcher.bot, update, **optional_args)
+TypeError: 'module' object is not callable
+2017-10-04 23:51:09,548 - telegram.ext.dispatcher - ERROR - An uncaught error was raised while processing the update
+Traceback (most recent call last):
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\dispatcher.py", line 270, in process_update
+    handler.handle_update(update, self)
+  File "C:\Users\mesenev\AppData\Local\Programs\Python\Python36\lib\site-packages\telegram\ext\messagehandler.py", line 169, in handle_update
+    return self.callback(dispatcher.bot, update, **optional_args)
+TypeError: 'module' object is not callable
+2017-10-05 00:14:58,908 - telegram.ext.updater - ERROR - Error while getting Updates: Timed out
+2017-10-05 00:14:58,911 - config_default - WARNING - Update "None" caused error "Timed out"
+2017-10-05 00:20:58,998 - telegram.ext.updater - ERROR - Error while getting Updates: Timed out
+2017-10-05 00:20:58,998 - config_default - WARNING - Update "None" caused error "Timed out"
+2017-10-05 00:47:00,718 - telegram.ext.updater - ERROR - Error while getting Updates: urllib3 HTTPError ('Connection aborted.', ConnectionResetError(10054, 'Удаленный хост принудительно разорвал существующее подключение', None, 10054, None))
+2017-10-05 00:47:00,753 - config_default - WARNING - Update "None" caused error "urllib3 HTTPError ('Connection aborted.', ConnectionResetError(10054, 'Удаленный хост принудительно разорвал существующее подключение', None, 10054, None))"

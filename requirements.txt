@@ -1,3 +1,5 @@
+pytest
+future
 requests
 pytz
 python-telegram-bot

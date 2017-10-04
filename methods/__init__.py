@@ -1,1 +1,2 @@
-from .get_top import get_top, get_top_without_timecheck
+from .get_top import send_msg
+from .mojno import send_msg
