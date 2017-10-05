@@ -48,7 +48,19 @@ def group_create(bot, *args):
     return group
 
 
-def approve_registration():
+def approve_registration(bot, update):
+    if update.message.from_user.id not in CONTRIBUTORS:
+        return
+    try:
+        st_id = update.message.split()[1]
+        student = Student.get(str(Student.id) == st_id)
+        student.approved = True
+        student.save()
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='Регистрация студента {} подтверждена.'.format(student.fullname))
+    except Exception as e:
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='Подтверждение упало с ошибкой: \n %s' % str(e))
     pass
 
 
