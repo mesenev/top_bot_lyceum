@@ -11,6 +11,10 @@ def create_group(bot, update):
         return
     try:
         params = [x.strip(' \t\n') for x in update.message.split('\n')[1:]]
+
+        if len(params):
+            bot.send_message(chat_id=update.message.chat_id, text=INSTRUCTION)
+
         group = group_create(bot, *params)
         bot.send_message(chat_id=update.message.chat_id, text=random.choice(SUCCESS_GROUP))
 
@@ -18,9 +22,9 @@ def create_group(bot, update):
         bot.send_message(chat_id=update.message.chat_id, text='Создание %i студентов завершено успешно' % len(st))
         message = 'Служба создания групп желает вам хорошего дня!'
     except Exception as e:
-        message = 'Что-то пошло не так. Обратитесь к @mesenev с вот этим:\n'+str(e)
+        message = 'Что-то пошло не так. Обратитесь к @mesenev с вот этим:\n' + str(e)
 
-    bot.send_message(chat_id=update.message.chat_id, text = message)
+    bot.send_message(chat_id=update.message.chat_id, text=message)
 
 
 def students_create(group, *argv):
@@ -44,6 +48,10 @@ def group_create(bot, *args):
     return group
 
 
+def approve_registration():
+    pass
+
+
 DENIED = [
     'Похоже, у вас не хватает прав доступа, {}.',
     'Вам сюда нельзя. Ваша фамилия будет записана, на всякий случай.',
@@ -52,3 +60,5 @@ DENIED = [
 SUCCESS_GROUP = [
     'Группа успешно создана! Перехожу к созданию объектов пользователей.'
 ]
+
+INSTRUCTION = 'Some text'
