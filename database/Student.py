@@ -8,8 +8,7 @@ from database.database import BotModel
 class Student(BotModel):
     fullname = CharField()
     telegram_id = CharField()
-    city = CharField()
-    lyceumgroup_id = ForeignKey(LyceumGroup)
+    lyceum_group = ForeignKey(LyceumGroup)
 
 
 def update_or_create_user(telegramid, **kwargs):

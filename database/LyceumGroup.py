@@ -9,3 +9,4 @@ class LyceumGroup(BotModel):
     telegram_chat_id = CharField()
     lecturer_telegram_id = CharField()
     lecturer_fullname = CharField()
+    city = CharField()

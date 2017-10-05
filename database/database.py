@@ -1,6 +1,6 @@
 import peewee
 
-db = peewee.SqliteDatabase('people.db')
+db = peewee.SqliteDatabase('database.db')
 
 
 class BotModel(peewee.Model):
