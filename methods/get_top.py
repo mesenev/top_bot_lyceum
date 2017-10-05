@@ -1,7 +1,7 @@
 import random
-import re
-import requests
+
 from config import *
+from methods.common import get_common_data_from_web
 
 last_update = datetime.datetime.now() - datetime.timedelta(hours=24)
 
@@ -27,7 +27,7 @@ def _get_top(bot, update, **kwargs):
     bot.send_message(chat_id=update.message.chat_id, text=random.choice(PREPARE_MESSAGE))
     if update.message.from_user.id not in CONTRIBUTORS:
         last_update = datetime.datetime.now()
-    kids = _get_data_from_web()
+    kids = get_common_data_from_web()
     answ = _create_top(kids)
     return answ
 
@@ -38,11 +38,11 @@ def send_msg(bot, update, **kwargs):
 
 
 def _create_top(kids_list):
-    kids = sorted(kids_list, key=lambda t: t[1], reverse=True)
+    kids = kids_list
     i = 0
     j = 0
     message = '{} {}:\n'.format(_current_time().strftime("%B %d, %H:%M"), random.choice(HEADERS))
-    while i < (NUMBER_OF_KIDS):
+    while i < NUMBER_OF_KIDS:
         message += '{}: {} {}\n'.format(TITLES_LIST[j], *kids[i])
         while i + 1 < len(kids) and kids[i][1] == kids[i + 1][1]:
             i += 1
@@ -53,13 +53,3 @@ def _create_top(kids_list):
     return message
 
 
-def _get_data_from_web():
-    r = requests.get(DATA_URL, cookies={'sessionid': SESSION_ID})
-    q = re.search("<table class=(.*?)</table>", r.content.decode().replace('\n', '')).group(0)
-    kids = [x.replace('&nbsp;', ' ') for x in re.findall('/">(.*?)</a>', q)]
-    marks = [float(x) for x in re.findall('(\d*\.\d*)\s*</span>', q)]
-
-    result = []
-    for _ in range(0, len(kids)):
-        result += [(kids[_], marks[_])]
-    return result
