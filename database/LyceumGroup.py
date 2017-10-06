@@ -1,4 +1,3 @@
-from django.db.models import ForeignKey
 from peewee import CharField, DateField, BooleanField
 
 from database.database import BotModel
@@ -10,3 +9,4 @@ class LyceumGroup(BotModel):
     lecturer_telegram_id = CharField()
     lecturer_fullname = CharField()
     city = CharField()
+    tasks_list_url = CharField()
