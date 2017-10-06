@@ -1,4 +1,4 @@
-pytest
+peewee
 future
 requests
 pytz
