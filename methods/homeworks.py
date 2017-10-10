@@ -3,6 +3,7 @@ from enum import Enum, auto
 from telegram.ext import CommandHandler, MessageHandler, Filters
 from telegram.ext.conversationhandler import ConversationHandler
 from telegram.message import Message
+from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
 from telegram.update import Update
 from lyceum_api import get_check_queue
 from lyceum_api.issue import QueueTask
@@ -21,10 +22,11 @@ def handle_hw(bot, update: Update):
 
     q = [QueueTask(t) for t in get_check_queue(user.sid)]
 
-    tasks = ('Задания на проверку:\n' +
-             '\n'.join('{} -- {}'.format(t.task_title, t.student_name) for t in q))
+    tasks = [['{} -- {}'.format(t.task_title, t.student_name)] for t in q]
 
-    update.message.reply_text(tasks)
+    markup = ReplyKeyboardMarkup(tasks, one_time_keyboard=True)
+    update.message.reply_text('Выберите задание на проверку',
+                              reply_markup=markup)
     return ConversationHandler.END
 
 
