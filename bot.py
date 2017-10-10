@@ -1,7 +1,13 @@
 import locale
-import methods
+
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+import database
+import methods
 from config import *
+
+database.db.connect()
+database.db.create_tables(database.models, safe=True)
 
 try:
     locale.setlocale(locale.LC_TIME, "ru_RU")
@@ -29,3 +35,5 @@ dispatcher.add_handler(methods.auth.conv_handler)
 updater.start_polling()
 
 updater.idle()
+
+database.db.close()
