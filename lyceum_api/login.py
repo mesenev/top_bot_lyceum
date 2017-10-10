@@ -11,4 +11,4 @@ def login(username, passwd):
                      'password': passwd,
                      'csrfmiddlewaretoken': s.cookies['csrftoken']})
 
-    return s.cookies['sessionid']
+    return s.cookies['sessionid'], s.cookies['csrftoken']

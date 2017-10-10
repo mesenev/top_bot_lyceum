@@ -32,10 +32,12 @@ def handle_password(bot, update, user_data):
     if '@' not in username:
         username += '@lyceum.yaconnect.com'
 
-    sid = lyceum_api.login(username, message.text)
+    sid, token = lyceum_api.login(username, message.text)
 
-    user, created = LyceumUser.get_or_create(username=username, sid=sid)
-    user.tgid = message.from_user.id
+    user, created = LyceumUser.get_or_create(tgid=message.from_user.id)
+    user.sid = sid
+    user.token = token
+    user.username = username
     user.save()
 
     update.message.reply_text('Ваш новый sid: {}.'

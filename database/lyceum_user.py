@@ -5,6 +5,7 @@ from .database import BotModel
 
 class LyceumUser(BotModel):
     tgid = IntegerField(verbose_name='Telegram id', primary_key=True)
-    sid = CharField()
-    username = CharField()
+    username = CharField(null=True)
+    sid = CharField(null=True)
+    token = CharField(null=True)
     # never store passwords!
