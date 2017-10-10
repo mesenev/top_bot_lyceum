@@ -1,4 +1,3 @@
-from django.db.models import ForeignKey
 from peewee import CharField, DateField, BooleanField
 
 from database.database import BotModel
