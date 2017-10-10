@@ -1,6 +1,6 @@
 from peewee import CharField, DateField, BooleanField, ForeignKeyField
 
-from database import LyceumGroup
+from database.LyceumGroup import LyceumGroup
 from database.database import BotModel
 
 
