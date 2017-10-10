@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 from typing import List
 
 import requests
@@ -85,8 +86,12 @@ def get_check_queue(sid: str, n: int = 5):
           'course_id=34&' \
           'filter=status_field%3D3'.format(n)
 
-    data = requests.get(url, cookies={'sessionid': sid})
-    j = data.json()
+    s = requests.Session()
+    data = s.get(url, cookies={'sessionid': sid})
+    try:
+        j = data.json()
+    except JSONDecodeError as e:
+        return {}
 
     return j['data']
 
