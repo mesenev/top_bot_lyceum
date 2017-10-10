@@ -34,12 +34,17 @@ class IssueParser(HtmlParser):
     task: str = None
     comments: List[Comment] = None
     current_comment: Comment = None
+    token: str = None
 
     def on_feed(self):
         self.task = ''
         self.comments = []
 
     def on_starttag(self, t: Tag):
+        if (t.attrs.get('name') == 'csrfmiddlewaretoken'
+                and self._tags_stack[-2].attrs.get('id') == 'status_form'):
+            self.token = t.attrs['value']
+
         if t.name == 'li' and 'history' in self._classes:
             self.current_comment = Comment()
             self.current_comment.files = []
@@ -104,4 +109,4 @@ def get_issue(sid: str, issue_id: int) -> [str, List[Comment]]:
     issue_parser.feed(data)
     issue_parser.close()
 
-    return issue_parser.task, issue_parser.comments
+    return issue_parser.task, issue_parser.comments, issue_parser.token

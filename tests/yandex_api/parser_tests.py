@@ -148,3 +148,6 @@ class IssueParserTestCase(unittest.TestCase):
         self._feed_file('issue_page.html')
         self._check_task()
         self._check_comments()
+
+        self.assertEqual('iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1',
+                         self.parser.token)

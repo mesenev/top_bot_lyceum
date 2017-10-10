@@ -35,8 +35,10 @@ def handle_hw(bot, update: Update, user_data):
 
     q = [QueueTask(t) for t in get_check_queue(user.sid)]
 
-    tasks = [('task#{}%{}'.format(t.id, t.student_url),
+    tasks = [('task#{}'.format(t.id),
               '{} -- {}'.format(t.task_title, t.student_name)) for t in q]
+
+    user_data['tasks'] = {t.id: t for t in q}
 
     keyboard = [[InlineKeyboardButton(t, callback_data=i)]
                 for i, t in tasks]
@@ -47,17 +49,28 @@ def handle_hw(bot, update: Update, user_data):
     return State.task_choose
 
 
+process_kb = (("На проверке", 3), ("На доработке", 4), ("Зачтено", 5))
+
+
 def on_choose(bot, update: Update, user_data):
     query: CallbackQuery = update.callback_query
     user: LyceumUser = user_data['user']
 
-    task, *rest = query.data.split('#')
-    id, stud, stud_name = rest.split('%')
+    task, iid = query.data.split('#')
     if task != 'task':
         return
 
-    task, comments = get_issue(user.sid, id)
-    query.message.reply_text(task)
+    task = user_data['tasks'][int(iid)]
+    user_data['task'] = task
+    task_url = '\nhttps://lms.yandexlyceum.ru/issue/{}'.format(task.id)
+
+    stud = task.student_url
+    stud_name = task.student_name
+
+    descr, comments, token = get_issue(user.sid, iid)
+    query.message.reply_text(descr + task_url)
+
+    user_data['token'] = token
 
     pyfiles = [f for c in comments for f in c.files
                if c.author_href == stud and f.endswith('.py')]
@@ -66,18 +79,41 @@ def on_choose(bot, update: Update, user_data):
         query.message.reply_text('Нету файлов!')
 
     r = requests.get(pyfiles[-1])
+
+    keyboard = ReplyKeyboardMarkup([(i for i, j in process_kb)],
+                                   one_time_keyboard=True)
+
     query.message.reply_text('Автор: {}\nРешение:\n'
                              '```\n{}\n```'.format(stud_name, r.text),
-                             parse_mode=ParseMode.MARKDOWN)
+                             parse_mode=ParseMode.MARKDOWN,
+                             reply_markup=keyboard)
+
+    return State.task_process
 
 
-
-
-    return State.task_choose
-
-
-def on_process(bot, update, user_data):
+def on_process(bot, update: Update, user_data):
+    '''"csrfmiddlewaretoken=iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1&form_name=status_form&status=3&comment_verdict="'''
     message: Message = update.message
+    pk = dict(process_kb)
+    if message.text not in pk:
+        # TODO comment
+        return ConversationHandler.END
+
+    user: LyceumUser = user_data['user']
+    task: QueueTask = user_data['task']
+
+    r = requests.post('https://lms.yandexlyceum.ru/issue/{}'.format(task.id),
+                      data=dict(csrfmiddlewaretoken=user_data['token'],
+                                comment_verdict='',
+                                form_name='status_form',
+                                status=pk[message.text]),
+                      cookies={'sessionid': user.sid,
+                               'csrftoken': user_data['token']})
+    print(r.text)
+    message.reply_text('Отправлено: ' + message.text)
+
+    return ConversationHandler.END
+
 
 
 def add_handlers(dispatcher: Dispatcher):
