@@ -2,9 +2,11 @@ from enum import Enum, auto
 
 from telegram.ext import CommandHandler, MessageHandler, Filters
 from telegram.ext.conversationhandler import ConversationHandler
+from telegram.message import Message
 from telegram.update import Update
 
 import lyceum_api.login
+from database.lyceum_user import LyceumUser
 
 
 class States(Enum):
@@ -14,7 +16,7 @@ class States(Enum):
 
 def handle_login(bot, update: Update):
     update.message.reply_text('Введите имя пользователя '
-                              '(можно без @blabla)')
+                              '(можно без `@blabla`)')
     return States.username
 
 
@@ -25,8 +27,15 @@ def handle_username(bot, update: Update, user_data):
 
 
 def handle_password(bot, update, user_data):
-    sid = lyceum_api.login(user_data['username'],
-                           update.message.text)
+    message: Message = update.message
+    username = user_data['username']
+    if '@' not in username:
+        username += '@lyceum.yaconnect.com'
+
+    sid = lyceum_api.login(username, message.text)
+
+    LyceumUser.get_or_create(username=username, sid=sid, tgid=message.from_user.id)
+
     update.message.reply_text('Ваш новый sid: {}.'
                               ' Не забудьте его!'.format(sid))
     return ConversationHandler.END
