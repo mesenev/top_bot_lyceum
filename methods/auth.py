@@ -33,7 +33,7 @@ def handle_password(bot, update, user_data):
 
 
 conv_handler = ConversationHandler(
-    entry_points=[CommandHandler('login', handle_login)],
+    entry_points=[CommandHandler('login', handle_login, Filters.private)],
 
     states={
         States.username: [MessageHandler(Filters.text,
