@@ -8,6 +8,7 @@ from .parser import Parser as HtmlParser, Tag
 
 
 class QueueTask(AnnotatedJson):
+    id: str
     responsible_name: str
     has_issue_access: str
     issue_url: str

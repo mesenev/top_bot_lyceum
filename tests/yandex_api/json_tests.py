@@ -38,4 +38,6 @@ class JsonModelTestCase(unittest.TestCase):
         t2 = QueueTask(data[1])
 
         self.assertEqual(t1.student_name, 'Ефремов Александр')
+        self.assertEqual(t1.id, 60348)
         self.assertEqual(t2.student_name, 'Шаманский Виктор')
+        self.assertEqual(t2.id, 60349)
