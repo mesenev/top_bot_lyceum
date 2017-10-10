@@ -97,7 +97,7 @@ def get_check_queue(sid: str, n: int = 5):
     return j['data']
 
 
-def get_issue(sid: str, issue_id: int):
+def get_issue(sid: str, issue_id: int) -> [str, List[Comment]]:
     data = requests.get('https://lms.yandexlyceum.ru/issue/' + str(issue_id),
                         cookies={'sessionid': sid}).text
 
