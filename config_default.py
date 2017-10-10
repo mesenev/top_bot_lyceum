@@ -15,9 +15,13 @@ TIMEZONE = pytz.timezone('Asia/Vladivostok')
 
 
 def setup_logger(dispatcher):
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO,
+    logfmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    logging.basicConfig(format=logfmt, level=logging.INFO,
                         filename='log')
     logger = logging.getLogger(__name__)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.ERROR)
+    logging.getLogger('').addHandler(ch)
 
     # log all errors
     def error(bot, update, err):
