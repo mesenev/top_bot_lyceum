@@ -9,6 +9,6 @@ def login(username, passwd):
     r = s.post(config.LOGIN_URL,
                data={'username': username,
                      'password': passwd,
-                     'csrfmiddlewaretoken': s.cookies['sessionid']})
+                     'csrfmiddlewaretoken': s.cookies['csrftoken']})
 
     return s.cookies['sessionid']

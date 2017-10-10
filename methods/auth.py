@@ -34,7 +34,9 @@ def handle_password(bot, update, user_data):
 
     sid = lyceum_api.login(username, message.text)
 
-    LyceumUser.get_or_create(username=username, sid=sid, tgid=message.from_user.id)
+    user, created = LyceumUser.get_or_create(username=username, sid=sid)
+    user.tgid = message.from_user.id
+    user.save()
 
     update.message.reply_text('Ваш новый sid: {}.'
                               ' Не забудьте его!'.format(sid))
@@ -54,3 +56,8 @@ conv_handler = ConversationHandler(
     },
     fallbacks=[]
 )
+
+
+def get_user(message: Message) -> LyceumUser:
+    q = LyceumUser.filter(tgid=message.from_user.id)
+    return q[0] if q else None

@@ -2,10 +2,11 @@ from typing import List
 
 import requests
 
+from .json_model import AnnotatedJson
 from .parser import Parser as HtmlParser, Tag
 
 
-class QueueTask(object):
+class QueueTask(AnnotatedJson):
     responsible_name: str
     has_issue_access: str
     issue_url: str
@@ -84,9 +85,10 @@ def get_check_queue(sid: str, n: int = 5):
           'course_id=34&' \
           'filter=status_field%3D3'.format(n)
 
-    data = requests.get(url, cookies={'sessionid': sid}).json()
+    data = requests.get(url, cookies={'sessionid': sid})
+    j = data.json()
 
-    return data['data']
+    return j['data']
 
 
 def get_issue(sid: str, issue_id: int):
