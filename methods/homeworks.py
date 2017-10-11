@@ -122,7 +122,7 @@ def on_process(bot, update: Update, user_data):
     message.reply_text('Отправлено: ' + message.text)
     user_data['comment'] = ''
 
-    return ConversationHandler.END
+    return handle_hw(bot, update, user_data)
 
 
 
