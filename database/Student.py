@@ -1,6 +1,7 @@
 from peewee import CharField, DateField, BooleanField
+from peewee import CharField, DateField, BooleanField, ForeignKeyField
 
-from database import LyceumGroup
+from database.LyceumGroup import LyceumGroup
 from database.database import BotModel
 
 
@@ -8,7 +9,7 @@ class Student(BotModel):
     fullname = CharField()
     telegram_id = CharField()
     approved = BooleanField(default=False)
-    lyceum_group = ForeignKey(LyceumGroup)
+    lyceum_group = ForeignKeyField(LyceumGroup)
 
 
 def update_or_create_user(telegram_id, **kwargs):
