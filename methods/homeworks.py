@@ -68,7 +68,8 @@ def on_choose(bot, update: Update, user_data):
     stud_name = task.student_name
 
     descr, comments, token = get_issue(user.sid, iid)
-    query.message.reply_text(descr + task_url)
+    query.message.reply_text(descr + task_url,
+                             parse_mode=ParseMode.MARKDOWN)
 
     user_data['token'] = token
 
