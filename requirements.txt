@@ -1,3 +1,4 @@
+telegram
 peewee
 future
 requests

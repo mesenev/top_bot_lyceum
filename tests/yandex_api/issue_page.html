@@ -1,0 +1,1904 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Количество минут в году (*) | Кулинич Артём </title>
+
+
+        <script src="https://yastatic.net/jquery/2.2.3/jquery.min.js"></script>
+        <script src="https://yastatic.net/jquery-ui/1.11.2/jquery-ui.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/smalot-bootstrap-datetimepicker/2.4.4/js/bootstrap-datetimepicker.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/smalot-bootstrap-datetimepicker/2.4.4/js/locales/bootstrap-datetimepicker.ru.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"></script>
+        <script src="https://malsup.github.io/jquery.form.js"></script>
+        <script src="https://anytask.s3.yandex.net/static/jquery.tablesorter/jquery.tablesorter.min.js"></script>
+        <script src="https://anytask.s3.yandex.net/static/jquery-metadata/jquery.metadata.js"></script>
+        <script src="https://anytask.s3.yandex.net/static/bootstrap-multiselect.min.js"></script>
+        <script src="https://anytask.s3.yandex.net/static/typeahead.bundle.min.js"></script>
+
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+        <link href="https://yastatic.net/jquery-ui/1.11.2/themes/base/jquery-ui.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/smalot-bootstrap-datetimepicker/2.4.4/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+        <link href="https://anytask.s3.yandex.net/static/bootstrap-multiselect.css" rel="stylesheet">
+        <link href="https://anytask.s3.yandex.net/static/typeahead.css" rel="stylesheet">
+        <link href="https://anytask.s3.yandex.net/static/index.css" rel='stylesheet'/>
+
+
+        <script type="text/javascript">
+            if (!String.prototype.format) {
+                String.prototype.format =  function(){
+                    var args = arguments;
+                    return this.replace(/\{(\d+)\}/g, function(m, n){
+                        if (m == "{" + "{") { return "{"; }
+                        if (m == "}" + "}") { return "}"; }
+                        return args[n];
+                    });
+                };
+            }
+            $(function() {
+                var user_profiles_bloodhound = new Bloodhound({
+                    datumTokenizer: function(datum) {
+                        return Bloodhound.tokenizers.whitespace(datum.fullname);
+                    },
+                    queryTokenizer: Bloodhound.tokenizers.whitespace,
+                    remote: {
+                        wildcard: '%QUERY',
+                        url: '/search/users?q=%QUERY',
+                        transform: function(response) {
+                            $('#navbar_search').data('up_limited', response.is_limited);
+                            return response.result;
+                        }
+                    }
+                });
+                var courses_bloodhound = new Bloodhound({
+                    datumTokenizer: function(datum) {
+                        return Bloodhound.tokenizers.whitespace(datum.fullname);
+                    },
+                    queryTokenizer: Bloodhound.tokenizers.whitespace,
+                    remote: {
+                        wildcard: '%QUERY',
+                        url: '/search/courses?q=%QUERY',
+                        transform: function(response) {
+                            $('#navbar_search').data('course_limited', response.is_limited);
+                            return response.result;
+                        }
+                    }
+                });
+
+                $('#navbar_search').typeahead({
+                        highlight: true,
+                        hint: false,
+                        minLength: 3
+                    },
+                    {
+                        name: 'user_profiles',
+                        displayKey: 'fullname',
+                        source: user_profiles_bloodhound.ttAdapter(),
+                        templates: {
+                            header: '<h6 class="search-model-name">Пользователи</h6>',
+                            suggestion: function(data) {
+                                var table_html = '<div class="sgs-result-up" data-url="{0}"><table>' +
+                                    '<tr><td style="padding-right: 10px;"><img class="avatar" src="{1}" style="width: 30px; height: 30px;"></td>' +
+                                    '<td><div><strong>{2}</strong></div>{3}</td></tr>' +
+                                    '<tr><td></td><td>{4}</td></tr>' +
+                                    '<tr><td></td><td><strong>Логины</strong></td></tr>' +
+                                    '<tr><td></td><td>{5}@ <small class="text-muted">Anytask</small></td></tr>' +
+                                    '{6}' +
+                                    '{7}' +
+                                    '</table></div>';
+                                var email_html = '';
+                                var ya_contest_login_html = '';
+                                var ya_passport_email_html = '';
+                                var avatar = data.avatar;
+                                var status_html = '';
+                                var status_template = '<span class="label label-status-sgs" style="background-color: {0}">{1}</span>';
+                                var MAX_STATUSES = 2;
+                                var status_counter = 0;
+
+                                while (status_counter < data.statuses.length) {
+                                    if (status_counter == MAX_STATUSES) {
+                                        status_html += '<span class="label label-status-sgs label-default ">ещё ' + (data.statuses.length - MAX_STATUSES) + '</span>';
+                                        break;
+                                    }
+
+                                    status_html += status_template.format(data.statuses[status_counter][1], data.statuses[status_counter][0]);
+                                    ++status_counter;
+                                }
+
+                                if (!avatar)
+                                    avatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm&f=y';
+                                if (data.email)
+                                    email_html = '<div class="sgs-email">{0}</div>'.format(data.email);
+                                if (data.ya_contest_login)
+                                    ya_contest_login_html = '<tr><td></td><td>{0}@ <small class="text-muted">Я.Контест</small></td></tr>'.format(data.ya_contest_login);
+                                if (data.ya_passport_email)
+                                    ya_passport_email_html = '<tr><td></td><td>{0} <small class="text-muted">Я.Почта</small></td></tr>'.format(data.ya_passport_email);
+
+                                return table_html.format(data.url, avatar, data.fullname, email_html, status_html, data.username, ya_contest_login_html, ya_passport_email_html)
+                            },
+
+                        }
+                    },
+                    {
+                        name: 'courses',
+                        displayKey: 'name',
+                        source: courses_bloodhound.ttAdapter(),
+                        templates: {
+                            header: '<h6 class="search-model-name">Курсы</h6>',
+                            suggestion: function(data) {
+                                var schools_html = '';
+                                var archive_html = '';
+
+                                if (!data.is_active)
+                                    archive_html = '<small class="text-muted">Архив</small>';
+
+                                for (var i = 0; i < data.schools.length; ++i)
+                                    schools_html += '<div>{0}</div>'.format(data.schools[i]);
+                                var course_html = '<div data-url="{0}"><div class="sgs-result-course"><strong>{1} {2}</strong>{3}</div>' +
+                                    '<div class="sgs-result-course">{4}</div></div>';
+
+                                return course_html.format(data.url, data.name, data.year, archive_html, schools_html);
+                            },
+
+                        }
+                    }
+                ).on('typeahead:select', function(ev, suggestion) {
+                    window.location = suggestion.url;
+                }).on('typeahead:render', function (event, items, isAsync, datasetName) {
+                    if (items) {
+                        var menu = $(this).siblings('.tt-menu');
+
+                        if ($('#navbar_search').data('course_limited') || $('#navbar_search').data('up_limited')) {
+                            if (!$('.search-show-more', menu).length)
+                                $(menu).append("<div class='search-show-more'><button type='submit'>Все результаты</button></div>");
+                        }
+                        else
+                            $('.search-show-more', menu).remove();
+                    }
+                });
+
+                $('.tt-menu').on("mouseleave", function() {
+                        $(this).find('.tt-cursor').removeClass('tt-cursor');
+                    }
+                ).on("mouseenter", 'div.search-show-more', function() {
+                        $(this).closest('.tt-menu').find('.tt-cursor').removeClass('tt-cursor');
+                    }
+                );
+
+
+                $(document).on('click', '.nav-form-search form[role="search"]:not(.active) button[type="submit"]', function(event) {
+                    event.preventDefault();
+                    var form = $(this).closest('form[role="search"]');
+                    var input = form.find('input[name="q"]');
+                    form.addClass('active');
+                    input.focus();
+
+                });
+
+                $(document).on('click', '.nav-form-search form[role="search"].active button[type="submit"]', function(event) {
+                    event.preventDefault();
+                    var form = $(this).closest('form[role="search"]');
+                    var input = form.find('input[name="q"]');
+                    if (input.val()) {
+                        form.submit();
+                    }
+                    else {
+                        form.removeClass('active');
+                    }
+                });
+
+            });
+        </script>
+
+        <style type="text/css">
+
+        </style>
+
+
+
+
+    <link rel="stylesheet" type="text/css" href="https://anytask.s3.yandex.net/static/issues/issue.css">
+    <script src="https://anytask.s3.yandex.net/static/jquery.validate.min.js"></script>
+
+
+
+<script src="https://malsup.github.io/jquery.form.js"></script>
+<script src="https://anytask.s3.yandex.net/static/tinymce/tinymce.min.js"></script>
+<script src="https://anytask.s3.yandex.net/static/tinymce/jquery.tinymce.min.js"></script>
+<script src="https://anytask.s3.yandex.net/static/prism.js"></script>
+
+<link href="https://anytask.s3.yandex.net/static/prism.css" rel='stylesheet' />
+<link href="https://anytask.s3.yandex.net/static/tinymce-style-issue-comment.css" rel='stylesheet' />
+<link href="https://anytask.s3.yandex.net/static/tinymce-style-task.css" rel='stylesheet' />
+
+<script type="text/javascript">
+    var tinymce_default = {
+        language: 'ru',
+        skin: 'bootstrap4',
+        content_css: [
+            'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css',
+            'https://anytask.s3.yandex.net/static/tinymce-style-issue-comment.css',
+            'https://anytask.s3.yandex.net/static/prism.css'
+        ],
+        relative_urls : false,
+        remove_script_host: false
+    };
+
+    $(document).ready(function () {
+
+        $(document).on('focusin', function(e) {
+            if ($(e.target).closest(".mce-window").length) {
+                e.stopImmediatePropagation();
+            }
+        });
+
+        $('#task-text').on('hide.bs.collapse', function () {
+            $(".btn-history-task-text").blur();
+            window.sessionStorage.setItem('collapsed', true);
+        }).on('show.bs.collapse', function () {
+            $(".btn-history-task-text").blur();
+            window.sessionStorage.setItem('collapsed', false);
+        }).on('hidden.bs.collapse', function () {
+            $("span.fa", ".btn-history-task-text").removeClass("fa-caret-up").addClass("fa-caret-down");
+        }).on('shown.bs.collapse', function () {
+            window.sessionStorage.setItem('collapsed', false);
+            $("span.fa", ".btn-history-task-text").removeClass("fa-caret-down").addClass("fa-caret-up");
+        });
+
+        if(window.sessionStorage.getItem('collapsed') === "true") {
+            $('#task-text').collapse('hide');
+            $("span.fa", ".btn-history-task-text").removeClass("fa-caret-up").addClass("fa-caret-down");
+        } else {
+            $('#task-text').collapse('show');
+            $("span.fa", ".btn-history-task-text").removeClass("fa-caret-down").addClass("fa-caret-up");
+        }
+
+        $("select[multiple]").multiselect({
+            buttonClass: 'btn btn-secondary btn-block',
+            templates: {
+                ul: '<ul class="multiselect-container dropdown-menu" style="left:inherit;top: inherit;"></ul>',
+                li: '<li><a tabindex="0" class="dropdown-item"><label></label></a></li>',
+                filter: '<li class="multiselect-item filter"><div class="input-group"><input class="form-control multiselect-search" type="text"></div></li>',
+                filterClearBtn: '<span class="input-group-btn"><button class="btn btn-secondary btn-block multiselect-clear-filter" type="button"><i class="fa fa-times"></i></button></span>'
+            },
+            enableCaseInsensitiveFiltering: true,
+            filterPlaceholder: "Найти...",
+            maxHeight: 200,
+            buttonContainer: '<div style="width:100%;" class="multiselect-dropdown"/>',
+            buttonWidth: '100%',
+            buttonTitle: function(options, select) {
+                var labels = [];
+
+                if (options.length === 0) {
+                    return '---';
+                }
+                else {
+                    options.each(function () {
+                        labels.push($(this).text());
+                    });
+                }
+                return labels.join(', ');
+            },
+            buttonText: function(options, select) {
+                if (options.length === 0) {
+                    return '---';
+                }
+                else {
+                    var labels = [];
+                    options.each(function() {
+                        if ($(this).attr('label') !== undefined) {
+                            labels.push($(this).attr('label'));
+                        }
+                        else {
+                            labels.push($(this).text());
+                        }
+                    });
+                    return labels.join(', ') + '';
+                }
+            }
+        });
+
+        var info_width = $('ul.history').closest('.card').innerWidth();
+
+        $("#id_comment").tinymce($.extend({}, tinymce_default, {
+            setup: function(editor) {
+                editor.addButton('preview_text', {
+                    icon: false,
+                    text: 'Preview',
+                    cmd: 'mcePreview'
+                });
+                editor.addMenuItem('codesample', {
+                    icon: 'codesample',
+                    text: 'Insert/Edit code sample',
+                    cmd: 'codesample'
+                });
+            },
+            plugins: [
+                'autoresize autosave autolink codesample hr image link lists',
+                'table textpattern wordcount contextmenu preview paste'
+            ],
+            menubar: false,
+            toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image link hr | blockquote codesample table | preview_text',
+            autoresize_bottom_margin: 10,
+            autoresize_overflow_padding: 10,
+            image_description: false,
+            link_assume_external_targets: true,
+            default_link_target: "_blank",
+            target_list: false,
+            link_title: false,
+            table_default_attributes: {
+                "class": 'table table-bordered table-comment'
+            },
+            textpattern_patterns: [
+                {start: '1. ', cmd: 'InsertOrderedList'}
+            ],
+            contextmenu: "link image codesample",
+            paste_auto_cleanup_on_paste : true,
+            paste_remove_styles: true,
+            paste_remove_styles_if_webkit: true,
+            paste_strip_class_attributes: true,
+            plugin_preview_width: info_width,
+            autosave_ask_before_unload: false
+        }));
+
+        $("textarea.comment-verdict").tinymce($.extend({}, tinymce_default, {
+            plugins: [
+                'autolink lists paste placeholder'
+            ],
+            content_style: "body {padding: .375rem .75rem;}",
+            height: 40,
+            menubar: false,
+            toolbar: false,
+            statusbar: false,
+            default_link_target: "_blank",
+            autosave_ask_before_unload: false
+        }));
+
+        $("#id_comment").keydown(function (e) {
+            if (e.ctrlKey && e.keyCode == 13) {
+                $("form#comment").submit();
+            }
+        });
+
+        $('div.container form:not(.navbar-form)').submit(function(e){
+            var d = 'disabled';
+            if ($(this).valid()) {
+                $(this).find('button[type="submit"]:first').attr(d, d).prop(d, true).html("<span class='fa fa-circle-o-notch fa-spin fa-fw'></span> Сохранение");
+                $(this).find('button[type="submit"]:not(:first)').hide();
+                $(this).find('.dropdown-submit').hide();
+            }
+        });
+
+        $('#modal_task_description_btn').click(function (e) {
+            $('#modal_task_description').modal('show');
+            e.preventDefault();
+        });
+
+        jQuery.validator.addMethod("lt_max", function(value, element) {
+            var value = parseFloat(value);
+            var max = parseFloat($('#max_mark').val());
+            return isNaN(value) || value <= max;
+        });
+
+        $("#mark_form").validate({
+            rules: {
+                mark: {
+                    required : true,
+                    number: true,
+                    min: 0,
+                    lt_max: true
+                }
+            },
+
+            highlight: function(input) {
+                $(input).removeClass('form-control-success').addClass('form-control-danger');
+                $('#mark_fieldset_id').removeClass('has-success').addClass('has-danger');
+            },
+
+            success: function(label) {
+                label.addClass('valid');
+                $('#id_mark').removeClass('form-control-danger').addClass('form-control-success');
+                $('#mark_fieldset_id').removeClass('has-danger').addClass('has-success');
+            },
+
+            messages: {
+                mark: {
+                    required : "Укажите оценку.",
+                    number : "Оценка должна быть выражена натуральным числом.",
+                    min : "Оценка должна быть больше или равна 0.",
+                    lt_max : "Оценка не должна быть больше " + $('#max_mark').val()
+                }
+            },
+
+            errorPlacement: function (error, element) {
+                $('#mark_edit_error_text').empty().append(error );
+            }
+        });
+    });
+
+    function add_file_field() {
+        var files = $('#id_files')[0].outerHTML;
+        $("#file_field").append('<tr><td>' + files + '</td></tr>');
+    }
+
+
+</script>
+
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-fixed-top navbar-light navbar-yandex">
+        <div class="container">
+
+            <div class="navbar-brand">
+                <a href="https://yandex.ru">
+                    <img alt="yandex.ru"
+                         src="https://anytask.s3.yandex.net/static/logo/ru/Yandex.svg"></a>
+                <a href="/">
+                    <img alt="yandexlyceum.ru"
+                         src="https://anytask.s3.yandex.net/static/logo/ru/Lyceum.svg"></a>
+            </div>
+
+            <!--
+            <ul class="nav">
+                <li><a href="/about">About</a></li>
+            </ul>
+            -->
+            <button class="navbar-toggler hidden-lg-up pull-xs-right" type="button" data-toggle="collapse" data-target="#exCollapsingNavbar2">
+                <span class="fa fa-bars fa" aria-hidden="true"></span>
+            </button>
+            <div class="collapse navbar-toggleable-md" id="exCollapsingNavbar2">
+
+    <ul class="nav navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/course/34#tasks-tab">Список задач</a>
+        </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/course/34/queue">Очередь на проверку</a>
+            </li>
+
+    </ul>
+
+
+                    <div class="nav-right">
+
+                            <ul class="nav navbar-nav">
+
+                                    <li class="nav-item">
+                                        <div class="nav-form-search">
+                                            <form class="navbar-form" role="search" method="get"
+                                                  action="/search/">
+                                                <div class="input-group">
+                                                    <div class="input-group-input">
+                                                        <input class="typeahead form-control" id="navbar_search" name="q" type="text" placeholder="Найти...">
+                                                    </div>
+                                                    <div class="input-group-btn">
+                                                        <button class="btn" type="submit"><span class="fa fa-search" style="line-height: 1.5"></span></button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </li>
+
+
+                                    <li class="nav-item">
+                                        <a href="/mail/" class="nav-link" role="button" style="position: relative;"><span class="fa fa-envelope" aria-hidden="true" style="line-height: inherit;"></span>
+
+                                                <span id="top_notify_count" class="label label-pill label-danger top_notify_count"></span>
+                                                <span id="top_notify_count_string">Новых сообщений нет.</span>
+
+                                        </a>
+                                    </li>
+
+                                <li class="nav-item dropdown">
+                                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                        <span class="fa fa-user"></span>
+                                        <span id="navbar_user_name">Никита Малявин </span>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right dropdown-username" aria-labelledby="dropdownMenu1">
+                                        <h6 class="dropdown-header">Никита Малявин</h6>
+                                        <a class="dropdown-item" href="/accounts/profile">Профиль</a>
+                                        <a class="dropdown-item" href="/user/settings">Настройки</a>
+
+
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="/accounts/password/change/">Сменить пароль</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="/accounts/logout/">Выйти</a>
+                                    </div>
+                                </li>
+                            </ul>
+
+                    </div>
+
+            </div>
+        </div>
+    </nav>
+
+
+<div class="container">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <ul class="breadcrumb">
+
+        <li>
+
+                <a href="/">Начало</a>
+
+        </li>
+
+        <li>
+
+                <a href="/school/yndxlyceum">Яндекс Лицей</a>
+
+        </li>
+
+        <li>
+
+                <a href="/course/34">Основы программирования на языке Python (дополнительное образование)</a>
+
+        </li>
+
+        <li>
+
+                <a href="/course/34/seminar/636">Урок №2. Условный оператор, отступы, числа, функции</a>
+
+        </li>
+
+        <li class="active">
+
+                Issue: 60344 Количество минут в году (*)
+
+        </li>
+
+</ul>
+
+
+
+        <div class="row">
+            <div class="col-md-8 col-sm-12 col-xs-12">
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+
+    $(document).on("click", "#old_comments_button", function() {
+        if($("#top_alert").hasClass("clicked")) {
+            $("#top_alert").show();
+            $("#top_alert").removeClass("clicked");
+        } else {
+            $("#top_alert").hide();
+            $("#top_alert").addClass("clicked");
+        }
+    });
+
+</script>
+
+<style>
+    .mce-tinymce {
+        margin-bottom: 1rem;
+    }
+</style>
+<div class="card card-block">
+    <h5 class="card-title">Количество минут в году (*)
+        <a class="btn btn-secondary btn-sm btn-square btn-history-task-text" data-toggle="collapse" href="#task-text"
+           aria-expanded="false" aria-controls="task-text">
+            <span class="fa fa-caret-down"></span>
+        </a>
+    </h5>
+    <div class="collapse" id="task-text">
+        <div class="problem-statement">
+<div class="header">
+<h1 class="title"><span style="color: #ff0000;">Количество минут в году</span></h1>
+<table class="table table-sm">
+<tbody>
+<tr class="time-limit">
+<td class="property-title">Ограничение времени</td>
+<td>1&nbsp;секунда</td>
+</tr>
+<tr class="memory-limit">
+<td class="property-title">Ограничение памяти</td>
+<td>64Mb</td>
+</tr>
+<tr class="input-file">
+<td class="property-title">Ввод</td>
+<td colspan="1">стандартный ввод или input.txt</td>
+</tr>
+<tr class="output-file">
+<td class="property-title">Вывод</td>
+<td colspan="1">стандартный вывод или output.txt</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2>&nbsp;</h2>
+<div class="legend">
+<p><span class="tex-monospace">days_per_year = 365</span> <br /> <span class="tex-monospace">hours_per_day = 24</span> <br /> <span class="tex-monospace">minutes_per_hour = 60</span></p>
+<p>Допишите программу так, чтобы она выводила количество минут в (не високосном) году, используя эти данные.</p>
+</div>
+<h2>Формат вывода</h2>
+<div class="output-specification">
+<p>Выводится одно число.</p>
+</div>
+</div>
+    </div>
+</div>
+<div class="card card-block">
+    <h5 class="card-title">Обсуждение задачи</h5>
+    <ul class="history">
+
+
+
+
+            <li>
+                <div class="row">
+                    <div class="col-xs-offset-1 col-xs-11">
+                        <strong><a class="card-link" href="/users/artiom-kulinitch2017/" style="color:#373a3c;">
+                            Кулинич Артём</a>&nbsp;</strong>
+                        <small class="text-muted">
+                            <i class="fa fa-clock-o fa-flip-horizontal"></i> 08 Окт 15:44
+                        </small>
+                    </div>
+                    <div class="user_img col-xs-1 pull-xs-left">
+                        <a class="card-link" href="/users/artiom-kulinitch2017/">
+                            <img class="avatar" src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm&f=y
+                        " style="width: 50px; height: 50px;">
+                        </a>
+
+                    </div>
+                    <div class="col-xs-11">
+                        <div class="not_mine history-body
+                        ">
+
+                                <div class="issue-page-comment not-sanitize"><p>Отправлено на проверку в Я.Контест.</p></div>
+
+
+                                <div class="files">
+
+                                    <i class="fa fa-file-o"></i>
+
+                                        <a href=https://anytask.s3.yandex.net/files/e314cb37-0ff3-44fd-9525-e7c91e2e6ba8/Kolichestvo%20minut%20v%20godu.py>Kolichestvo minut v godu.py</a>
+
+
+                                </div>
+
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+
+
+
+
+
+
+
+
+            <li>
+                <div class="row">
+                    <div class="col-xs-offset-1 col-xs-11">
+                        <strong><a class="card-link"  style="color:#373a3c;">
+                            Лицей Бот</a>&nbsp;</strong>
+                        <small class="text-muted">
+                            <i class="fa fa-clock-o fa-flip-horizontal"></i> 08 Окт 15:46
+                        </small>
+                    </div>
+                    <div class="user_img col-xs-1 pull-xs-left">
+                        <a class="card-link" >
+                            <img class="avatar" src="https://anytask.s3.yandex.net/images/user_1/avatar" style="width: 50px; height: 50px;">
+                        </a>
+
+                    </div>
+                    <div class="col-xs-11">
+                        <div class="not_mine history-body
+                        ">
+
+                                <div class="contest-response-comment not-sanitize"><p>Вердикт Я.Контест: ok</p></div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+
+
+
+
+
+
+
+
+            <li>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <strong><a class="card-link" href="/users/malyavin/" style="color:#373a3c;">
+                            Малявин  Никита</a>&nbsp;</strong>
+                        <small class="text-muted">
+                            <i class="fa fa-clock-o fa-flip-horizontal"></i> 09 Окт 23:48
+                        </small>
+                    </div>
+                    <div class="user_img col-xs-1 pull-xs-right">
+                        <a class="card-link" href="/users/malyavin/">
+                            <img class="avatar" src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm&f=y
+                        " style="width: 50px; height: 50px;">
+                        </a>
+
+                    </div>
+                    <div class="col-xs-11">
+                        <div class="mine history-body
+                        ">
+
+                                <div class="issue-page-comment not-sanitize"><p>&nbsp;тест</p>
+<p>&nbsp;</p></div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+
+
+
+
+
+
+
+    </ul>
+</div>
+
+<div>
+
+
+
+
+
+
+
+
+<!--[if lt IE 7]>
+<link rel="stylesheet" href="https://anytask.s3.yandex.net/static/demo/bootstrap-ie6.min.css">
+<![endif]-->
+
+
+
+
+
+
+
+<link
+    rel="stylesheet"
+    href="https://anytask.s3.yandex.net/static/demo/blueimp-gallery.min.css"
+>
+
+
+
+
+
+
+
+<link rel="stylesheet" href="https://anytask.s3.yandex.net/static/css/jquery.fileupload-ui.css">
+
+
+<noscript>
+    <link rel="stylesheet"
+    href="https://anytask.s3.yandex.net/static/css/jquery.fileupload-ui-noscript.css"
+    >
+</noscript>
+
+
+
+
+
+
+
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js">
+    </script>
+    <![endif]-->
+
+
+
+
+
+
+
+
+<form
+    id="fileupload" action="/issue/upload/"
+    method="POST" enctype="multipart/form-data"
+>
+
+    <div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1' /></div>
+
+
+    <noscript>
+        <input type="hidden" name="redirect" value="https://anytask.s3.yandex.net/static/demo/jQuery-File-Upload/">
+    </noscript>
+    <input type="hidden" name="form_name" value="comment_form">
+    <textarea rows="4" name="comment" id="id_comment" cols="40" class="form-control col-md-12" style="margin-bottom: 10px;"></textarea>
+    <input type="hidden" name="issue_id" value="60344">
+
+    <div class="fileupload-buttonbar">
+
+
+        <div class="col-md-12" style="padding: 0">
+
+
+
+
+            <style type = "text/css">
+            .drop-zone {
+              border: 2px dashed rgba(0,0,0,.3);
+              border-radius: 10px;
+              font-family: Arial;
+              text-align: center;
+              position: relative;
+              line-height: 70px;
+              font-size: 20px;
+              color: rgba(0,0,0,.3);
+            }
+            .drop-btn {
+              position: relative;
+              float: none;
+            }
+            </style>
+            <div id="filename_changed_alert" class="alert alert-warning alert-dismissible" role="alert" style="display: none;margin-bottom: 0;">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                Имя файла было изменено.
+            </div>
+            <table style="margin-bottom: 0px;" role="presentation" class="table table-striped">
+               <tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody>
+            </table>
+
+                <div class="drop-zone" id="drop-zone" ondragenter="this.style.background='#E0E0E0';" ondragleave="this.style.background='';" ondrop="this.style.background='';">
+
+                <span class="btn btn-secondary drop-btn fileinput-button" id="drop-btn">
+                    <span>Выберите файлы</span>
+
+
+
+                    <input
+                        type="file" name="files[]"
+
+
+                            multiple
+
+
+
+                    >
+
+                </span>
+                или перетащите сюда
+                </div>
+
+
+
+
+
+                <input type="hidden" name="update_issue" value="" />
+                <button style="margin-top: 10px;" type="submit" class="btn btn-primary pull-xs-right">
+                    <span>Отправить</span>
+                </button>
+
+
+        </div>
+
+
+
+
+    </div>
+
+
+
+
+
+    <div class="fileupload-loading"></div>
+    <br>
+
+
+
+
+
+
+</form>
+
+
+
+
+
+
+<div id="modal-gallery" class="modal modal-gallery hide fade"
+    data-filter=":odd" tabindex="-1">
+    <div class="modal-header">
+        <a class="close" data-dismiss="modal">&times;</a>
+        <h3 class="modal-title"></h3>
+    </div>
+    <div class="modal-body"><div class="modal-image"></div></div>
+    <div class="modal-footer">
+        <a class="btn modal-download" target="_blank">
+            <i class="icon-download"></i>
+            <span>Download</span>
+        </a>
+        <a class="btn btn-success modal-play modal-slideshow"
+            data-slideshow="5000">
+            <i class="icon-play icon-white"></i>
+            <span>Slideshow</span>
+        </a>
+        <a class="btn btn-info modal-prev">
+            <i class="icon-arrow-left icon-white"></i>
+            <span>Previous</span>
+        </a>
+        <a class="btn btn-primary modal-next">
+            <span>Next</span>
+            <i class="icon-arrow-right icon-white"></i>
+        </a>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+<script id="template-upload" type="text/x-tmpl">
+{% for (var i=0, file; file=o.files[i]; i++) { %}
+    <tr class="template-upload fade">
+        <td class="preview"><span class="fade"></span></td>
+        <td class="name"><span>{%=file.name%}</span></td>
+        <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
+
+        {% if (file.error) { %}
+            <td class="error" colspan="2">
+                <span class="label label-important">Error</span>.
+                {%=file.error%}
+            </td>
+        {% } else if (o.files.valid && !i) { %}
+
+            <td>
+                <progress class="progress">
+                    <div class="progress-bar progress-bar-success progress-bar-striped active bar" role="progressbar" style="width:0%"></div>
+                </progress>
+            </td>
+
+            <td class="cancel">{% if (!o.options.autoUpload) { %}
+            {% } %}</td>
+        {% } else { %}
+            <td colspan="2"></td>
+        {% } %}
+        <td class="start">{% if (!i) { %}
+        {% } %}</td>
+    </tr>
+{% } %}
+</script>
+
+
+
+
+
+
+
+<script id="template-download" type="text/x-tmpl">
+{% for (var i=0, file; file=o.files[i]; i++) { %}
+
+    <tr class="template-download fade">
+
+        {% if (file.error) { %}
+
+
+            <td></td>
+
+            <td class="name"><span>{%=file.name%}</span></td>
+            <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
+            <td class="error" colspan="2"><span class="label label-important">Error</span>
+
+            {%=file.error%}</td>
+
+
+        {% } else { %}
+
+
+            <td class="preview">
+            {% if (file.thumbnail_url) { %}
+
+                <a href="{%=file.url%}"
+                   title="{%=file.name%}"
+                   data-gallery="gallery" download="{%=file.name%}">
+                   <img src="{%=file.thumbnail_url%}">
+                </a>
+            {% } %}</td>
+
+
+
+            <td class="name">
+                <a href="{%=file.url%}"
+                   title="{%=file.name%}"
+                   data-gallery="{%=file.thumbnail_url&&'gallery'%}"
+                   download="{%=file.name%}">{%=file.name%}
+                </a>
+            </td>
+
+
+
+            <td class="size"><span>{%=o.formatFileSize(file.size)%}</span></td>
+
+
+            <td colspan="2"></td>
+
+        {% } %}
+
+
+        {%
+            if (file.one_file_upload) {
+                $('#filename_changed_alert').show();
+                $('.drop-zone').hide();
+            }
+        %}
+        <td>
+            <button class="btn btn-danger delete" data-type="{%=file.delete_type%}"
+                    data-url="{%=file.delete_url%}"
+                    data-data='{ "csrfmiddlewaretoken" : "iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1" }'
+                    {% if (file.delete_with_credentials) { %}
+                         data-xhr-fields='{"withCredentials":true}'
+                    {% } %}>
+                <i class="fa fa-times" style="color:#FFFFFF"></i>
+                <span></span>
+            </button>
+        </td>
+        <td>
+        {% if (file.send_to_contest) { %}
+            <div class="alert alert-success" role="alert">Выберите компилятор</div>
+            <select id='compiler' name="compiler_for_{%=file.pk%}" class="form-control">
+                {% if (file.chosen_compiler) { %}
+                    <option value="{%=file.chosen_compiler%}"> {%=file.chosen_compiler%} </option>
+                {% } %}
+                {% for (var j=0, compiler; compiler=file.problem_compilers[j]; j++) { %}
+                    <option value="{%=compiler%}">{%=compiler%}</option>
+                {% } %}
+            </select>
+        {% } %}
+        </td>
+        {% if (!file.send_to_contest) { %}
+            <input type="hidden" name="pk_{%=file.name%}" value="{%=file.pk%}">
+        {% } %}
+
+
+    </tr>
+{% } %}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<script src="https://anytask.s3.yandex.net/static/js/vendor/jquery.ui.widget.js"></script>
+
+
+
+
+<script src="https://anytask.s3.yandex.net/static/demo/tmpl.min.js"></script>
+
+
+
+
+<script src="https://anytask.s3.yandex.net/static/demo/load-image.min.js"></script>
+
+
+
+
+<script src="https://anytask.s3.yandex.net/static/demo/canvas-to-blob.min.js"></script>
+
+
+
+
+<script src="https://anytask.s3.yandex.net/static/demo/bootstrap.min.js"></script>
+
+
+
+<script src="https://anytask.s3.yandex.net/static/demo/blueimp-gallery.min.js"></script>
+
+
+
+
+<script src="https://anytask.s3.yandex.net/static/js/jquery.iframe-transport.js"></script>
+
+
+
+
+<script src="https://anytask.s3.yandex.net/static/js/jquery.fileupload.js"></script>
+
+
+
+
+<script src="https://anytask.s3.yandex.net/static/js/jquery.fileupload-fp.js"></script>
+
+
+
+
+<script src="https://anytask.s3.yandex.net/static/js/jquery.fileupload-ui.js"></script>
+
+
+
+
+<script type="text/javascript">
+    $(function() {
+        'use strict';
+
+
+
+
+    $('#fileupload').fileupload({
+        formData: [
+            { name: "csrfmiddlewaretoken", value: "iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1"},
+            { name: "issue_id", value: "60344"},
+            { name: "comment", value:function() {return $("#id_comment").val()}}
+        ],
+
+            autoUpload: true,
+
+                maxNumberOfFiles: 10,
+
+            dropZone: $(".drop-zone"),
+
+    });
+
+    $('.fileupload-buttonbar').on("click", '.delete', function() {
+        $('#filename_changed_alert').hide();
+        $('.drop-zone').show();
+    });
+
+
+
+
+
+
+
+        $('#fileupload').addClass('fileupload-processing');
+        $.ajax({
+
+            //xhrFields: {withCredentials: true},
+            url: $('#fileupload').fileupload('option', 'url'),
+            dataType: 'json',
+            context: $('#fileupload')[0]
+        }).always(function () {
+            $(this).removeClass('fileupload-processing');
+        }).done(function (result) {
+            $(this).fileupload('option', 'done')
+                .call(this, null, {result: result});
+        });
+
+
+    });
+</script>
+
+
+
+
+<!--[if gte IE 8]>
+<script src="https://anytask.s3.yandex.net/static/js/cors/jquery.xdr-transport.js"></script>
+<![endif]-->
+
+
+
+
+</div>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"></script>
+<script src="https://anytask.s3.yandex.net/static/typeahead.bundle.min.js"></script>
+
+            </div>
+            <div class="col-md-4 col-sm-12 col-xs-12 ">
+
+
+
+
+
+
+<style>
+    .card-header {
+        background-color: #FFFFFF;
+    }
+    #accordion2 div.form-group {
+        margin-bottom: 1.2rem;
+    }
+    #accordion2 div.form-group.btn-group-submit {
+        margin-bottom: 0;
+    }
+    #accordion2 small.text-help .error{
+        margin: -1.2rem 0 0 0;
+    }
+    #accordion2 .mce-container.mce-panel {
+        padding: 0 !important;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #55595c;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: .25rem;
+    }
+    #accordion2 .mce-container.mce-panel iframe {
+        border-radius: .25rem;
+    }
+    #accordion2 .mce-tinymce .mce-edit-area{
+        border: none;
+    }
+    .mce-tinymce .mce-edit-area label {
+        padding: .375rem .75rem !important;
+        font-size: 1rem !important;
+    }
+</style>
+
+
+<div id="accordion2">
+
+
+
+
+            <div class="card" style="margin-bottom: .3rem;">
+                <div class="card-header">
+                    <div class="row col-wrap">
+                        <div class="col-md-5 accordion2-label">
+
+                                Курс:
+
+                        </div>
+                        <div class="col-md-7 accordion2-result">
+
+
+
+                                        <a href="/course/34">Основы программирования на языке Python (дополнительное образование)</a>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+
+            <div class="card" style="margin-bottom: .3rem;">
+                <div class="card-header">
+                    <div class="row col-wrap">
+                        <div class="col-md-5 accordion2-label">
+
+                                Задача:
+
+                        </div>
+                        <div class="col-md-7 accordion2-result">
+
+
+
+                                        <a href="#" id="modal_task_description_btn">Количество минут в году (*)</a>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+
+            <div class="card" style="margin-bottom: .3rem;">
+                <div class="card-header">
+                    <div class="row col-wrap">
+                        <div class="col-md-5 accordion2-label">
+
+                                Студент:
+
+                        </div>
+                        <div class="col-md-7 accordion2-result">
+
+
+
+                                        <a class="user" href="/users/artiom-kulinitch2017/">Кулинич Артём</a>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+
+            <div class="card" style="margin-bottom: .3rem;">
+                <div class="card-header">
+                    <div class="row col-wrap">
+                        <div class="col-md-5 accordion2-label">
+
+                                <a href="#" type="button" data-toggle="collapse" data-target="#collapse5">Проверяющий</a>:
+
+                        </div>
+                        <div class="col-md-7 accordion2-result">
+
+
+
+                                        <a class="user" href="/users/malyavin/">Малявин  Никита</a>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+                    <div id="collapse5" class="collapse">
+                        <div class="card-block">
+                            <form method="post" id="responsible_name_form" enctype="multipart/form-data">
+                                <div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1' /></div>
+                                <div id="responsible_name_fieldset_id" style="padding-right: .9375rem; padding-left: .9375rem;">
+                                    <input type="hidden" name="form_name" value="responsible_name_form">
+
+
+
+<div id="div_id_responsible_name" class="form-group row"> <div class="controls "> <select id="id_responsible_name" class="select form-control" name="responsible_name">
+<option value="8635">Эмиль  Сабитов</option>
+<option value="8614">Денис  Кораблев</option>
+<option value="6175">Геннадий Кушнир</option>
+<option value="5881">Ирина Самая Лучшая</option>
+<option value="8567">Катя Смирнова</option>
+<option value="8629">Константин  Празян</option>
+<option value="8235">Ирина Нефедова</option>
+<option value="77">София Техажева</option>
+<option value="36">Женя Федосеева</option>
+<option value="7800">Виталий Дридгер</option>
+<option value="8602">Лев  Захаров</option>
+<option value="8649">Дамир  Шайхутдинов</option>
+<option value="8596">Иван  Дмитриев</option>
+<option value="6145">Лиля Барладян</option>
+<option value="8599">Дмитрий  Дунаев</option>
+<option value="6159">Владимир Куренков</option>
+<option value="6188">Светлана Сежетова</option>
+<option value="8625">Алексей  Мурышкин</option>
+<option value="35">Самый Лучший Менеджер</option>
+<option value="5">Николай Махалин</option>
+<option value="7525">Денис Кириенко</option>
+<option value="8617">Елена Лапшева</option>
+<option value="6153">Надежда Глинка</option>
+<option value="6174">Дмитрий Жемчужников</option>
+<option value="8238">Юрий Трофимов</option>
+<option value="8608">Максим  Кашичкин</option>
+<option value="6183">Дмитрий Михалин</option>
+<option value="8606">Наталья  Зыбина</option>
+<option value="8640">Ескендир  Султанов</option>
+<option value="8620" selected="selected">Никита Малявин</option>
+<option value="1">Бот Лицей</option>
+<option value="8236">Артем Рудаковский</option>
+<option value="8618">Александр  Лёвин</option>
+<option value="8634">Андрей  Рогов</option>
+<option value="8628">Дмитрий  Пехов</option>
+<option value="6858">Александр Доморацкий</option>
+<option value="6176">Елена Муратова</option>
+<option value="8624">Павел  Месенев</option>
+<option value="6181">Елена Яковенко</option>
+<option value="6179">Наталья Сергеева</option>
+<option value="257">Макс Пономарев</option>
+<option value="8642">Рамазан  Султан</option>
+<option value="6184">Денис Платонов</option>
+<option value="8619">Ержан  Мадемиханов</option>
+<option value="8638">Ольга  Сенчилова</option>
+<option value="926">Рита Шадрина</option>
+<option value="6674">Александр Паволоцкий</option>
+<option value="8607">Дмитрий  Илямаков</option>
+<option value="8647">Марат  Хасанов</option>
+<option value="8229">Игорь Власов</option>
+<option value="8646">Игорь  Фукин</option>
+<option value="14892">Александр Кленин</option>
+<option value="8593">Ольга  Беляева</option>
+<option value="6177">Ирина Муханова</option>
+<option value="8637">Михаил  Самойлов</option>
+<option value="8636">Ришат  Сагдеев</option>
+<option value="8610">Елена  Колупаева</option>
+<option value="6187">Максим Ломакин</option>
+<option value="6185">Николай Одиноченко</option>
+<option value="9260">Алексей  Бледнов</option>
+<option value="6146">Лилия Иноземцева</option>
+<option value="8643">Андрей  Суслов</option>
+<option value="8616">Светлана  Кузнецова</option>
+<option value="6180">Нелла Шишкова</option>
+<option value="8630">Константин  Проценко</option>
+<option value="8600">Мария  Жаворонкова</option>
+<option value="6172">Наталья Глушкова</option>
+<option value="6178">Светлана Сежетова</option>
+<option value="6149"></option>
+<option value="6186">Ирина Смирнова</option>
+<option value="8230">Андрей Егоров</option>
+<option value="6189">Елена Муратова</option>
+<option value="8626">Артём  Обухов</option>
+<option value="6156">Денис Кириенко</option>
+<option value="8594">Елена  Глазкова</option>
+<option value="8609">Владислав  Ковалев</option>
+<option value="8644">Владимир  Фолунин</option>
+<option value="6151">Светлана Вострухина</option>
+<option value="2">Александр Букин</option>
+<option value="8612">Евгений  Кондратьев</option>
+<option value="14319">Геннадий Кушнир</option>
+<option value="8231">Анна Казачкова</option>
+<option value="7082">Наталья Сергеева</option>
+<option value="8591">Татьяна  Астахова</option>
+<option value="6173">Виталий Дридгер</option>
+<option value="8588">Рамиль  Аглямзанов</option>
+<option value="6182">Михаил Диченко</option>
+</select> </div> </div>
+
+
+                                </div>
+
+                                <div class="form-group btn-group-submit">
+                                    <button type="submit" class="btn btn-secondary">Сохранить</button>
+
+                                        <button type="submit" class="btn btn-secondary" name="Me">Я</button>
+
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+            </div>
+
+
+
+            <div class="card" style="margin-bottom: .3rem;">
+                <div class="card-header">
+                    <div class="row col-wrap">
+                        <div class="col-md-5 accordion2-label">
+
+                                <a href="#" type="button" data-toggle="collapse" data-target="#collapse6">Наблюдатели</a>:
+
+                        </div>
+                        <div class="col-md-7 accordion2-result">
+
+
+                                    ---
+
+
+                        </div>
+                    </div>
+                </div>
+
+                    <div id="collapse6" class="collapse">
+                        <div class="card-block">
+                            <form method="post" id="followers_names_form" enctype="multipart/form-data">
+                                <div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1' /></div>
+                                <div id="followers_names_fieldset_id" style="padding-right: .9375rem; padding-left: .9375rem;">
+                                    <input type="hidden" name="form_name" value="followers_names_form">
+
+
+
+<div id="div_id_followers_names" class="form-group row"> <div class="controls "> <select multiple="multiple" id="id_followers_names" class="selectmultiple form-control" name="followers_names">
+<option value="8614">Денис  Кораблев</option>
+<option value="6175">Геннадий Кушнир</option>
+<option value="5881">Ирина Самая Лучшая</option>
+<option value="8235">Ирина Нефедова</option>
+<option value="77">София Техажева</option>
+<option value="7800">Виталий Дридгер</option>
+<option value="6145">Лиля Барладян</option>
+<option value="8599">Дмитрий  Дунаев</option>
+<option value="6159">Владимир Куренков</option>
+<option value="6188">Светлана Сежетова</option>
+<option value="6153">Надежда Глинка</option>
+<option value="6174">Дмитрий Жемчужников</option>
+<option value="8606">Наталья  Зыбина</option>
+<option value="8640">Ескендир  Султанов</option>
+<option value="1">Бот Лицей</option>
+<option value="8236">Артем Рудаковский</option>
+<option value="8618">Александр  Лёвин</option>
+<option value="6858">Александр Доморацкий</option>
+<option value="6176">Елена Муратова</option>
+<option value="257">Макс Пономарев</option>
+<option value="8638">Ольга  Сенчилова</option>
+<option value="926">Рита Шадрина</option>
+<option value="6674">Александр Паволоцкий</option>
+<option value="8607">Дмитрий  Илямаков</option>
+<option value="8647">Марат  Хасанов</option>
+<option value="8229">Игорь Власов</option>
+<option value="14892">Александр Кленин</option>
+<option value="8593">Ольга  Беляева</option>
+<option value="8610">Елена  Колупаева</option>
+<option value="6185">Николай Одиноченко</option>
+<option value="9260">Алексей  Бледнов</option>
+<option value="6172">Наталья Глушкова</option>
+<option value="6149"></option>
+<option value="6156">Денис Кириенко</option>
+<option value="8594">Елена  Глазкова</option>
+<option value="8609">Владислав  Ковалев</option>
+<option value="6151">Светлана Вострухина</option>
+<option value="8612">Евгений  Кондратьев</option>
+<option value="8231">Анна Казачкова</option>
+<option value="8591">Татьяна  Астахова</option>
+<option value="6173">Виталий Дридгер</option>
+<option value="6182">Михаил Диченко</option>
+<option value="8635">Эмиль  Сабитов</option>
+<option value="8567">Катя Смирнова</option>
+<option value="8629">Константин  Празян</option>
+<option value="36">Женя Федосеева</option>
+<option value="8602">Лев  Захаров</option>
+<option value="8649">Дамир  Шайхутдинов</option>
+<option value="8596">Иван  Дмитриев</option>
+<option value="8625">Алексей  Мурышкин</option>
+<option value="35">Самый Лучший Менеджер</option>
+<option value="5">Николай Махалин</option>
+<option value="7525">Денис Кириенко</option>
+<option value="8617">Елена Лапшева</option>
+<option value="8238">Юрий Трофимов</option>
+<option value="8608">Максим  Кашичкин</option>
+<option value="6183">Дмитрий Михалин</option>
+<option value="8620">Никита Малявин</option>
+<option value="8634">Андрей  Рогов</option>
+<option value="8628">Дмитрий  Пехов</option>
+<option value="8624">Павел  Месенев</option>
+<option value="6181">Елена Яковенко</option>
+<option value="6179">Наталья Сергеева</option>
+<option value="8642">Рамазан  Султан</option>
+<option value="6184">Денис Платонов</option>
+<option value="8619">Ержан  Мадемиханов</option>
+<option value="8646">Игорь  Фукин</option>
+<option value="6177">Ирина Муханова</option>
+<option value="8637">Михаил  Самойлов</option>
+<option value="8636">Ришат  Сагдеев</option>
+<option value="6187">Максим Ломакин</option>
+<option value="6146">Лилия Иноземцева</option>
+<option value="8643">Андрей  Суслов</option>
+<option value="8616">Светлана  Кузнецова</option>
+<option value="6180">Нелла Шишкова</option>
+<option value="8630">Константин  Проценко</option>
+<option value="8600">Мария  Жаворонкова</option>
+<option value="6178">Светлана Сежетова</option>
+<option value="6186">Ирина Смирнова</option>
+<option value="8230">Андрей Егоров</option>
+<option value="6189">Елена Муратова</option>
+<option value="8626">Артём  Обухов</option>
+<option value="8644">Владимир  Фолунин</option>
+<option value="2">Александр Букин</option>
+<option value="14319">Геннадий Кушнир</option>
+<option value="7082">Наталья Сергеева</option>
+<option value="8588">Рамиль  Аглямзанов</option>
+</select> </div> </div>
+
+
+                                </div>
+
+                                <div class="form-group btn-group-submit">
+                                    <button type="submit" class="btn btn-secondary">Сохранить</button>
+
+                                        <button type="submit" class="btn btn-secondary" name="Me">Я</button>
+
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+            </div>
+
+
+
+            <div class="card" style="margin-bottom: .3rem;">
+                <div class="card-header">
+                    <div class="row col-wrap">
+                        <div class="col-md-5 accordion2-label">
+
+                                <a href="#" type="button" data-toggle="collapse" data-target="#collapse7">Статус</a>:
+
+                        </div>
+                        <div class="col-md-7 accordion2-result">
+
+
+
+                                        На доработке
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+                    <div id="collapse7" class="collapse">
+                        <div class="card-block">
+                            <form method="post" id="status_form" enctype="multipart/form-data">
+                                <div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1' /></div>
+                                <div id="status_fieldset_id" style="padding-right: .9375rem; padding-left: .9375rem;">
+                                    <input type="hidden" name="form_name" value="status_form">
+
+
+
+<div id="div_id_status" class="form-group row"> <div class="controls "> <select id="id_status" class="select form-control" name="status">
+<option value="3">На проверке</option>
+<option value="4" selected="selected">На доработке</option>
+<option value="5">Зачтено</option>
+</select> </div> </div>
+
+
+                                </div>
+
+                                    <div class="form-group">
+                                        <textarea class='form-control comment-verdict' placeholder="Комментарий" style="width: 100%;height: 70px; resize: none;" rows='13' name='comment_verdict'></textarea>
+                                    </div>
+
+                                <div class="form-group btn-group-submit">
+                                    <button type="submit" class="btn btn-secondary">Сохранить</button>
+
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+            </div>
+
+
+
+            <div class="card" style="margin-bottom: .3rem;">
+                <div class="card-header">
+                    <div class="row col-wrap">
+                        <div class="col-md-5 accordion2-label">
+
+                                <a href="#" type="button" data-toggle="collapse" data-target="#collapse8">Оценка</a>:
+
+                        </div>
+                        <div class="col-md-7 accordion2-result">
+
+
+
+                                        7
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+                    <div id="collapse8" class="collapse">
+                        <div class="card-block">
+                            <form method="post" id="mark_form" enctype="multipart/form-data">
+                                <div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1' /></div>
+                                <div id="mark_fieldset_id" style="padding-right: .9375rem; padding-left: .9375rem;">
+                                    <input type="hidden" name="form_name" value="mark_form">
+
+                                        <input type="hidden" id="max_mark" value="7">
+
+
+
+<div id="div_id_mark" class="form-group row"> <div class="controls "> <input id="id_mark" type="text" placeholder="Формат: 5.31, 14" class="textinput textInput form-control" name="mark" /> </div> </div>
+
+
+                                        <small class="text-help" id="mark_edit_error_text"></small>
+
+                                </div>
+
+                                    <div class="form-group">
+                                        <textarea class='form-control comment-verdict' placeholder="Комментарий" style="width: 100%;height: 70px; resize: none;" rows='13' name='comment_verdict'></textarea>
+                                    </div>
+
+                                <div class="form-group btn-group-submit">
+                                    <button type="submit" class="btn btn-secondary">Сохранить</button>
+
+
+
+                                            <button type="submit" class="btn btn-secondary" name="Accepted">Зачтено</button>
+
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+            </div>
+
+
+
+
+
+            <div class="card" style="margin-bottom: .3rem;">
+                <div class="card-header">
+                    <div class="row col-wrap">
+                        <div class="col-md-5 accordion2-label">
+
+                                Номер отправки в соревнование:
+
+                        </div>
+                        <div class="col-md-7 accordion2-result">
+
+
+
+                                        <div style="display:inline;margin-right: 5px;"><a href="https://contest.yandex.ru/contest/2699/run-report/5134567">5134567</a></div>
+
+                                            <form method="post" style="display: inline;">
+                                                <div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1' /></div>
+                                                <input type="hidden" name="contest_rejudge" value="on">
+                                                <button type="submit" class="btn btn-secondary">Пересудить</button>
+                                            </form>
+
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+    <div class="card">
+        <div class="card-header">
+            <div class="row col-wrap">
+                <div class="col-md-5 accordion2-label">Дата сдачи:</div>
+                <div class="col-md-7 accordion2-result">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="modal_task_description" tabindex="-1" role="dialog" aria-labelledby="modal_header_task_descr" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h5  class="modal-title" id="modal_header_task_descr" style="display: inline-block; ">Количество минут в году (*)</h5>
+
+                    <a id="modal_task_descr_edit_button" href="/task/edit/685" type="button" style="opacity:0.2;filter: alpha(opacity=20);color:#000000;display: inline-block;vertical-align: super;margin-left: 5px;"><i class="fa fa-edit fa-lg"></i></a>
+
+                <div id="modal_header_deadline_time"></strong></div>
+            </div>
+            <div class="modal-body">
+                <div id="modal_body_task_descr"><div class="problem-statement">
+<div class="header">
+<h1 class="title"><span style="color: #ff0000;">Количество минут в году</span></h1>
+<table class="table table-sm">
+<tbody>
+<tr class="time-limit">
+<td class="property-title">Ограничение времени</td>
+<td>1&nbsp;секунда</td>
+</tr>
+<tr class="memory-limit">
+<td class="property-title">Ограничение памяти</td>
+<td>64Mb</td>
+</tr>
+<tr class="input-file">
+<td class="property-title">Ввод</td>
+<td colspan="1">стандартный ввод или input.txt</td>
+</tr>
+<tr class="output-file">
+<td class="property-title">Вывод</td>
+<td colspan="1">стандартный вывод или output.txt</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2>&nbsp;</h2>
+<div class="legend">
+<p><span class="tex-monospace">days_per_year = 365</span> <br /> <span class="tex-monospace">hours_per_day = 24</span> <br /> <span class="tex-monospace">minutes_per_hour = 60</span></p>
+<p>Допишите программу так, чтобы она выводила количество минут в (не високосном) году, используя эти данные.</p>
+</div>
+<h2>Формат вывода</h2>
+<div class="output-specification">
+<p>Выводится одно число.</p>
+</div>
+</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+            </div>
+        </div>
+
+
+
+</div>
+
+
+    <footer class="footer">
+        <div class="container">
+
+            <div style="display: inline-block; width: 100%">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <small class="text-muted pull-xs-right" >Пишите нам на <a href="mailto:lyceum@yandex-team.ru">lyceum@yandex-team.ru</a></small>
+            </div>
+        </div>
+    </footer>
+
+
+
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter26396970 = new Ya.Metrika({id:26396970,
+                    webvisor:true,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true});
+            } catch(e) { }
+        });
+
+        var n = d.getElementsByTagName("script")[0],
+            s = d.createElement("script"),
+            f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="//mc.yandex.ru/watch/26396970" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+</body>
+</html>
