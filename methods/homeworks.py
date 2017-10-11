@@ -58,7 +58,7 @@ def on_choose(bot, update: Update, user_data):
 
     task, iid = query.data.split('#')
     if task != 'task':
-        return
+        return ConversationHandler.END
 
     task = user_data['tasks'][int(iid)]
     user_data['task'] = task
@@ -72,16 +72,23 @@ def on_choose(bot, update: Update, user_data):
 
     user_data['token'] = token
 
+    kb = [(i for i, j in process_kb)]
+
     pyfiles = [f for c in comments for f in c.files
                if c.author_href == stud and f.endswith('.py')]
 
     if not pyfiles:
         query.message.reply_text('Нету файлов!')
+        if [f for c in comments for f in c.files if c.author_href == stud]:
+            kb.append(['решения надо отправлять в файлах с расширением .py'])
+            query.message.reply_text('Вообще файлы есть')
+        else:
+            return ConversationHandler.END
 
     r = requests.get(pyfiles[-1])
+    r.encoding = 'utf-8'
 
-    keyboard = ReplyKeyboardMarkup([(i for i, j in process_kb)],
-                                   one_time_keyboard=True)
+    keyboard = ReplyKeyboardMarkup(kb, one_time_keyboard=True)
 
     query.message.reply_text('Автор: {}\nРешение:\n'
                              '```\n{}\n```'.format(stud_name, r.text),
@@ -96,15 +103,16 @@ def on_process(bot, update: Update, user_data):
     message: Message = update.message
     pk = dict(process_kb)
     if message.text not in pk:
-        # TODO comment
-        return ConversationHandler.END
+        user_data['comment'] = message.text
+        message.reply_text('Комментарий принят. Теперь вердикт.')
+        return State.task_process
 
     user: LyceumUser = user_data['user']
     task: QueueTask = user_data['task']
 
     r = requests.post('https://lms.yandexlyceum.ru/issue/{}'.format(task.id),
                       data=dict(csrfmiddlewaretoken=user_data['token'],
-                                comment_verdict='',
+                                comment_verdict=user_data.get('comment', ''),
                                 form_name='status_form',
                                 status=pk[message.text]),
                       cookies={'sessionid': user.sid,
