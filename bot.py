@@ -36,7 +36,7 @@ dispatcher.add_handler(methods.homeworks.conv_handler)
 updater.start_polling()
 
 updater.bot.send_message(chat_id='-1001143969433',
-                         text='Успешно запущен. Бортовое время: %s' % datetime.datetime.now().strftime("%B %d, %H:%M"))
+                         text='Successfully launched! Current time is: %s' % datetime.datetime.now().strftime("%B %d, %H:%M"))
 
 updater.idle()
 
