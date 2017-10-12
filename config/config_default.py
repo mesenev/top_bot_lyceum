@@ -2,8 +2,7 @@ import datetime
 import logging
 import pytz
 
-CUPS_OF = 25
-BOT_TOKEN = ''
+CUPS_OF = 28
 LOGIN = ''
 PASSWORD = ''
 LOGIN_URL = ''
