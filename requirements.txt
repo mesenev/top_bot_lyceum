@@ -1,4 +1,4 @@
-telegram
+buildbot
 peewee
 future
 requests
