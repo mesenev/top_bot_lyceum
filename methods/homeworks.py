@@ -96,27 +96,40 @@ def on_choose(bot, update: Update, user_data):
     pyfiles = [f for c in comments for f in c.files
                if c.author_href == stud and f.endswith('.py')]
 
+    text = []
+
     if not pyfiles:
         kb.append(['Решения надо отправлять в файлах с расширением .py'])
         if [f for c in comments for f in c.files if c.author_href == stud]:
-            query.message.reply_text('Нету файлов .py!')
+            text = ['Нету файлов .py!']
         else:
             c_text = ['{}:\n{}'.format(c.author, c.text) for c in comments]
             query.message.reply_text('Нету файлов совсем! Комментарии:\n'
                                      '\n\n'.join(c_text))
             return ConversationHandler.END
 
-    r = requests.get(pyfiles[-1])
-    r.encoding = 'utf-8'
+    else:
+        r = requests.get(pyfiles[-1])
+        r.encoding = 'utf-8'
+
+        reply = 'Автор: {}\nРешение:\n'\
+                '```\n{}\n```'.format(stud_name, r.text)
+        text = ['']
+        for t in reply.split('\n'):
+            if len(text[-1] + t) + 3 < 4096:
+                text[-1] += '\n' + t
+            else:
+                text[-1] += '```'
+                text.append('```' + t)
 
     keyboard = ReplyKeyboardMarkup(kb,
                                    one_time_keyboard=True,
                                    resize_keyboard=True)
 
-    query.message.reply_text('Автор: {}\nРешение:\n'
-                             '```\n{}\n```'.format(stud_name, r.text),
-                             parse_mode=ParseMode.MARKDOWN,
-                             reply_markup=keyboard)
+    for reply in text:
+        query.message.reply_text(reply,
+                                 parse_mode=ParseMode.MARKDOWN,
+                                 reply_markup=keyboard)
 
     return State.task_process
 
