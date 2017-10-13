@@ -51,7 +51,7 @@ def send_msg_by_chunks(msg: Message,
                            reply_markup=keyboard)
 
 
-def handle_hw(bot, update: Update, user_data):
+def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
     user = get_user(update.message)
 
     if not user:
@@ -61,7 +61,6 @@ def handle_hw(bot, update: Update, user_data):
     user_data['user'] = user
 
     tasks = user_data.get('tasks')
-
     if not tasks or len(tasks.order) < 10:
         q = [QueueTask(t) for t in get_check_queue(user.sid, 30)]
 
@@ -72,9 +71,14 @@ def handle_hw(bot, update: Update, user_data):
     else:
         q = user_data['tasks'].order
 
+    if prev_task:
+        del tasks.mapping[prev_task.id]
+        del tasks.futures[prev_task.id]
+        tasks.order.remove(prev_task)
+
     if not q:
         update.message.reply_text('Ура! Домашки проверены')
-        return  ConversationHandler.END
+        return ConversationHandler.END
 
     tasks = [('task#' + str(t.id),
               '{} -- {}'.format(t.task_title, t.student_name))
@@ -171,11 +175,8 @@ def on_process(bot, update: Update, user_data):
     user_data['comment'] = ''
 
     tasks: Tasks = user_data['tasks']
-    del tasks.mapping[task.id]
-    del tasks.futures[task.id]
-    tasks.order.remove(task)
 
-    return handle_hw(bot, update, user_data)
+    return handle_hw(bot, update, user_data, prev_task=task)
 
 
 
