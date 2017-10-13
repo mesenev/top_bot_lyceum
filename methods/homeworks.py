@@ -77,7 +77,9 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
         tasks.order.remove(prev_task)
 
     if not q:
-        update.message.reply_text('Ура! Домашки проверены')
+        update.message.reply_text('Ура! Домашки проверены'
+                                  if prev_task else
+                                  'Пока что домашек нет...')
         return ConversationHandler.END
 
     tasks = [('task#' + str(t.id),
