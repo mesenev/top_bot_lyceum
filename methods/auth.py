@@ -40,8 +40,11 @@ def handle_password(bot, update, user_data):
     user.username = username
     user.save()
 
-    update.message.reply_text('Ваш новый sid: {}.'
-                              ' Не забудьте его!'.format(sid))
+    update.message.reply_text('Отлично!\n'
+                              'Ваш новый sid: {}.'
+                              ' Не забудьте его!\n'
+                              'Можете начать проверять домашки.'
+                              'Введите /hw'.format(sid))
     return ConversationHandler.END
 
 
