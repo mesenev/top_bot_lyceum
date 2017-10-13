@@ -1,6 +1,6 @@
 import random
 
-from config_default import CONTRIBUTORS
+from config.config_default import CONTRIBUTORS
 from database import LyceumGroup, Student
 
 
@@ -44,6 +44,7 @@ def group_create(bot, *args):
     group.telegram_chat_id = args[1]
     group.lecturer_telegram_id, group.lecturer_fullname = [x.strip(' \t\n') for x in args[2].split(',')]
     group.city = args[3]
+    group.tasks_list_url = args[4]
     group.save()
     return group
 

@@ -32,9 +32,12 @@ j.run_daily(lambda a, b: methods.send_msg(a, b), time=datetime.time(12))
 dispatcher.add_handler(CommandHandler('top', methods.get_top.send_msg))
 dispatcher.add_handler(methods.auth.conv_handler)
 dispatcher.add_handler(methods.homeworks.conv_handler)
-#methods.homeworks.add_handlers(dispatcher)
-
+# methods.homeworks.add_handlers(dispatcher)
 updater.start_polling()
+
+updater.bot.send_message(chat_id='-1001143969433',
+                         text='Successfully launched! Current time is:{} \n Cups of tea: {}'
+                         .format(datetime.datetime.now().strftime("%B %d, %H:%M"), CUPS_OF))
 
 updater.idle()
 

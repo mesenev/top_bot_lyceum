@@ -2,11 +2,10 @@ import datetime
 import logging
 import pytz
 
-CUPS_OF = 21
-BOT_TOKEN = ''
+CUPS_OF = 28
 LOGIN = ''
 PASSWORD = ''
-LOGIN_URL = 'https://lms.yandexlyceum.ru/accounts/login/'
+LOGIN_URL = ''
 DATA_URL = ''
 SESSION_ID = ''
 NUMBER_OF_KIDS = 5
@@ -15,13 +14,9 @@ TIMEZONE = pytz.timezone('Asia/Vladivostok')
 
 
 def setup_logger(dispatcher):
-    logfmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(format=logfmt, level=logging.INFO,
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO,
                         filename='log')
     logger = logging.getLogger(__name__)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
-    logging.getLogger('').addHandler(ch)
 
     # log all errors
     def error(bot, update, err):
