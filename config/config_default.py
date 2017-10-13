@@ -1,11 +1,12 @@
 import datetime
 import logging
+
 import pytz
 
 CUPS_OF = 28
 LOGIN = ''
 PASSWORD = ''
-LOGIN_URL = ''
+LOGIN_URL = 'https://lms.yandexlyceum.ru/accounts/login/'
 DATA_URL = ''
 SESSION_ID = ''
 NUMBER_OF_KIDS = 5
