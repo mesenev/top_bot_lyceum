@@ -1,3 +1,6 @@
+import asyncio
+import logging
+import traceback
 from json.decoder import JSONDecodeError
 from typing import List
 
@@ -6,9 +9,11 @@ import requests
 from .json_model import AnnotatedJson
 from .parser import Parser as HtmlParser, Tag
 
+logger = logging.getLogger('issue')
+
 
 class QueueTask(AnnotatedJson):
-    id: str
+    id: int
     responsible_name: str
     has_issue_access: str
     issue_url: str
@@ -83,30 +88,69 @@ class IssueParser(HtmlParser):
             self.current_comment = None
 
 
-issue_parser = IssueParser()
-
-
 def get_check_queue(sid: str, n: int = 5):
     url = 'https://lms.yandexlyceum.ru/course/ajax_get_queue?' \
           'draw=2&start=0&length={}&lang=ru&timezone=Asia%2FVladivostok&' \
           'course_id=34&' \
           'filter=status_field%3D3'.format(n)
 
-    s = requests.Session()
-    data = s.get(url, cookies={'sessionid': sid})
+    with requests.Session() as s:
+        data = s.get(url, cookies={'sessionid': sid})
+
     try:
         j = data.json()
     except JSONDecodeError as e:
-        return {}
+        return []
 
     return j['data']
 
 
-def get_issue(sid: str, issue_id: int) -> [str, List[Comment]]:
-    data = requests.get('https://lms.yandexlyceum.ru/issue/' + str(issue_id),
-                        cookies={'sessionid': sid}).text
+def get_issue(sid: str, issue_id: int) -> [str, List[Comment], str]:
+    url = 'https://lms.yandexlyceum.ru/issue/' + str(issue_id)
 
-    issue_parser.feed(data)
+    print('--> Start download issue id', issue_id)
+    r = requests.get(url, cookies={'sessionid': sid})
+
+    issue_parser = IssueParser()
+    issue_parser.feed(r.text)
     issue_parser.close()
+    print('<-- Finished download issue id', issue_id)
 
     return issue_parser.task, issue_parser.comments, issue_parser.token
+
+
+loop = asyncio.get_event_loop()
+
+
+def get_issue_async(sid: str, issue_id: int):
+    try:
+        return loop.run_in_executor(None, get_issue, sid, issue_id)
+        # return get_issue(sid, issue_id)
+    except:
+        logger.error(traceback.format_exc())
+
+
+def issue_send_verdict(sid: str, token: str, issue_id: int,
+                       verdict: int,
+                       comment: str,
+                       on_finish):
+    try:
+        url = 'https://lms.yandexlyceum.ru/issue/{}'.format(issue_id)
+        r = requests.post(url,
+                          data=dict(csrfmiddlewaretoken=token,
+                                    comment_verdict=comment,
+                                    form_name='status_form',
+                                    status=verdict),
+                          cookies={'sessionid': sid,
+                                   'csrftoken': token})
+        logger.log(logging.DEBUG, r.text)
+    except Exception as e:
+        logger.log(logging.ERROR,
+                   'request send failed. '
+                   'id: {} session: {} token: {} comment: {} '
+                   'verdict: {}'.format(issue_id, sid, token,
+                                        comment, verdict))
+    else:
+        print('verdict sent. '
+              'id: {}, status: {}'.format(issue_id, r.status_code))
+        on_finish()

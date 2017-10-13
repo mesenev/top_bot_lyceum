@@ -1,4 +1,6 @@
+from asyncio.futures import Future
 from enum import Enum, auto
+from typing import NamedTuple, List, Dict
 
 import requests
 from telegram.callbackquery import CallbackQuery
@@ -15,13 +17,19 @@ from telegram.update import Update
 
 from database.lyceum_user import LyceumUser
 from lyceum_api import get_check_queue
-from lyceum_api.issue import QueueTask, get_issue
+from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict
 from methods.auth import get_user
 
 
 class State(Enum):
     task_choose = auto()
     task_process = auto()
+
+
+class Tasks(NamedTuple):
+    mapping: Dict[int, QueueTask]
+    order: List[QueueTask]
+    futures: Dict[int, Future]
 
 
 def handle_hw(bot, update: Update, user_data):
@@ -33,13 +41,21 @@ def handle_hw(bot, update: Update, user_data):
 
     user_data['user'] = user
 
-    q = [QueueTask(t) for t in get_check_queue(user.sid)]
+    tasks = user_data.get('tasks')
 
-    tasks = [('task#{}'.format(t.id),
-              '{} -- {}'.format(t.task_title, t.student_name)) for t in q]
+    if not tasks or len(tasks.order) < 10:
+        q = [QueueTask(t) for t in get_check_queue(user.sid, 30)]
 
-    user_data['tasks'] = {t.id: t for t in q}
+        user_data['tasks'] = Tasks({t.id: t for t in q},
+                                   q,
+                                   {t.id: get_issue_async(user.sid, t.id)
+                                    for t in q})
+    else:
+        q = user_data['tasks'].order
 
+    tasks = [('task#' + str(t.id),
+              '{} -- {}'.format(t.task_title, t.student_name))
+             for t in q[:7]]
     keyboard = [[InlineKeyboardButton(t, callback_data=i)]
                 for i, t in tasks]
 
@@ -56,18 +72,20 @@ def on_choose(bot, update: Update, user_data):
     query: CallbackQuery = update.callback_query
     user: LyceumUser = user_data['user']
 
-    task, iid = query.data.split('#')
+    task, tid = query.data.split('#')
     if task != 'task':
         return ConversationHandler.END
 
-    task = user_data['tasks'][int(iid)]
+    tid = int(tid)
+    tasks: Tasks = user_data['tasks']
+    task: QueueTask = tasks.mapping[tid]
     user_data['task'] = task
     task_url = '\nhttps://lms.yandexlyceum.ru/issue/{}'.format(task.id)
 
     stud = task.student_url
     stud_name = task.student_name
 
-    descr, comments, token = get_issue(user.sid, iid)
+    descr, comments, token = loop.run_until_complete(tasks.futures[tid])
     query.message.reply_text(descr + task_url,
                              parse_mode=ParseMode.MARKDOWN)
 
@@ -79,17 +97,21 @@ def on_choose(bot, update: Update, user_data):
                if c.author_href == stud and f.endswith('.py')]
 
     if not pyfiles:
-        query.message.reply_text('Нету файлов!')
+        kb.append(['Решения надо отправлять в файлах с расширением .py'])
         if [f for c in comments for f in c.files if c.author_href == stud]:
-            kb.append(['решения надо отправлять в файлах с расширением .py'])
-            query.message.reply_text('Вообще файлы есть')
+            query.message.reply_text('Нету файлов .py!')
         else:
+            c_text = ['{}:\n{}'.format(c.author, c.text) for c in comments]
+            query.message.reply_text('Нету файлов совсем! Комментарии:\n'
+                                     '\n\n'.join(c_text))
             return ConversationHandler.END
 
     r = requests.get(pyfiles[-1])
     r.encoding = 'utf-8'
 
-    keyboard = ReplyKeyboardMarkup(kb, one_time_keyboard=True)
+    keyboard = ReplyKeyboardMarkup(kb,
+                                   one_time_keyboard=True,
+                                   resize_keyboard=True)
 
     query.message.reply_text('Автор: {}\nРешение:\n'
                              '```\n{}\n```'.format(stud_name, r.text),
@@ -100,7 +122,6 @@ def on_choose(bot, update: Update, user_data):
 
 
 def on_process(bot, update: Update, user_data):
-    '''"csrfmiddlewaretoken=iPTiuyP6wvLCKlKJwNkR1WOKUtVJK8N1&form_name=status_form&status=3&comment_verdict="'''
     message: Message = update.message
     pk = dict(process_kb)
     if message.text not in pk:
@@ -111,16 +132,21 @@ def on_process(bot, update: Update, user_data):
     user: LyceumUser = user_data['user']
     task: QueueTask = user_data['task']
 
-    r = requests.post('https://lms.yandexlyceum.ru/issue/{}'.format(task.id),
-                      data=dict(csrfmiddlewaretoken=user_data['token'],
-                                comment_verdict=user_data.get('comment', ''),
-                                form_name='status_form',
-                                status=pk[message.text]),
-                      cookies={'sessionid': user.sid,
-                               'csrftoken': user_data['token']})
-    print(r.text)
-    message.reply_text('Отправлено: ' + message.text)
+    loop.run_in_executor(None,
+                         issue_send_verdict,
+                         user.sid,
+                         user_data['token'],
+                         task.id,
+                         pk[message.text],
+                         user_data.get('comment', ''),
+                         lambda: message.reply_text('Отправлено: '
+                                                    + message.text))
     user_data['comment'] = ''
+
+    tasks: Tasks = user_data['tasks']
+    del tasks.mapping[task.id]
+    del tasks.futures[task.id]
+    tasks.order.remove(task)
 
     return handle_hw(bot, update, user_data)
 
