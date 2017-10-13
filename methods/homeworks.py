@@ -32,6 +32,25 @@ class Tasks(NamedTuple):
     futures: Dict[int, Future]
 
 
+def send_msg_by_chunks(msg: Message,
+                       text: str,
+                       delim: str,
+                       parse_mode=None,
+                       keyboard=None):
+        chunks = ['']
+        for t in text.split(delim):
+            if len(chunks[-1] + t) + 3 < 4096:
+                chunks[-1] += '\n' + t
+            else:
+                chunks[-1] += '```'
+                chunks.append('```' + t)
+
+        for reply in chunks:
+            msg.reply_text(reply,
+                           parse_mode=parse_mode,
+                           reply_markup=keyboard)
+
+
 def handle_hw(bot, update: Update, user_data):
     user = get_user(update.message)
 
@@ -52,6 +71,10 @@ def handle_hw(bot, update: Update, user_data):
                                     for t in q})
     else:
         q = user_data['tasks'].order
+
+    if not q:
+        update.message.reply_text('Ура! Домашки проверены')
+        return  ConversationHandler.END
 
     tasks = [('task#' + str(t.id),
               '{} -- {}'.format(t.task_title, t.student_name))
@@ -78,7 +101,11 @@ def on_choose(bot, update: Update, user_data):
 
     tid = int(tid)
     tasks: Tasks = user_data['tasks']
-    task: QueueTask = tasks.mapping[tid]
+    task: QueueTask = tasks.mapping.get(tid)
+
+    if not task:
+        return ConversationHandler.END
+
     user_data['task'] = task
     task_url = '\nhttps://lms.yandexlyceum.ru/issue/{}'.format(task.id)
 
@@ -96,40 +123,27 @@ def on_choose(bot, update: Update, user_data):
     pyfiles = [f for c in comments for f in c.files
                if c.author_href == stud and f.endswith('.py')]
 
-    text = []
-
     if not pyfiles:
         kb.append(['Решения надо отправлять в файлах с расширением .py'])
         if [f for c in comments for f in c.files if c.author_href == stud]:
-            text = ['Нету файлов .py!']
+            text = 'Нету файлов .py!'
         else:
             c_text = ['{}:\n{}'.format(c.author, c.text) for c in comments]
-            query.message.reply_text('Нету файлов совсем! Комментарии:\n'
-                                     '\n\n'.join(c_text))
-            return ConversationHandler.END
-
+            text = 'Нету файлов совсем! Комментарии:\n' + '\n\n'.join(c_text)
     else:
         r = requests.get(pyfiles[-1])
         r.encoding = 'utf-8'
 
-        reply = 'Автор: {}\nРешение:\n'\
-                '```\n{}\n```'.format(stud_name, r.text)
-        text = ['']
-        for t in reply.split('\n'):
-            if len(text[-1] + t) + 3 < 4096:
-                text[-1] += '\n' + t
-            else:
-                text[-1] += '```'
-                text.append('```' + t)
+        text = ('Автор: {}\nРешение:\n'
+                '```\n{}\n```'.format(stud_name, r.text))
 
     keyboard = ReplyKeyboardMarkup(kb,
                                    one_time_keyboard=True,
                                    resize_keyboard=True)
 
-    for reply in text:
-        query.message.reply_text(reply,
-                                 parse_mode=ParseMode.MARKDOWN,
-                                 reply_markup=keyboard)
+    send_msg_by_chunks(query.message, text, '\n',
+                       parse_mode=ParseMode.MARKDOWN,
+                       keyboard=keyboard)
 
     return State.task_process
 
