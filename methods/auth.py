@@ -34,17 +34,22 @@ def handle_password(bot, update, user_data):
 
     sid, token = lyceum_api.login(username, message.text)
 
-    user, created = LyceumUser.get_or_create(tgid=message.from_user.id)
-    user.sid = sid
-    user.token = token
-    user.username = username
-    user.save()
+    if sid:
+        user, created = LyceumUser.get_or_create(tgid=message.from_user.id)
+        user.sid = sid
+        user.token = token
+        user.username = username
+        user.save()
 
-    update.message.reply_text('Отлично!\n'
-                              'Ваш новый sid: {}.'
-                              ' Не забудьте его!\n'
-                              'Можете начать проверять домашки.'
-                              'Введите /hw'.format(sid))
+        reply = ('Отлично!\n'
+                 'Ваш новый sid: {}.'
+                 ' Не забудьте его!\n'
+                 'Можете начать проверять домашки.'
+                 'Введите /hw'.format(sid))
+    else:
+        reply = 'Неверный логин и/или пароль'
+
+    update.message.reply_text(reply)
     return ConversationHandler.END
 
 
