@@ -13,12 +13,14 @@ from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 from telegram.message import Message
 from telegram.parsemode import ParseMode
 from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
+from telegram.replykeyboardremove import ReplyKeyboardRemove
 from telegram.update import Update
 
 from database.lyceum_user import LyceumUser
 from lyceum_api import get_check_queue
 from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict
 from methods.auth import get_user
+from methods.greeting import reply_markup as greeting_markup
 
 
 class State(Enum):
@@ -61,13 +63,18 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
     user_data['user'] = user
 
     tasks = user_data.get('tasks')
-    if not tasks or len(tasks.order) < 10:
-        q = [QueueTask(t) for t in get_check_queue(user.sid, 30)]
+    if not tasks or len(tasks.order) < 8:
+        update.message.reply_text('Запрашиваем данные...',
+                                  reply_markup=ReplyKeyboardRemove())
+        q = [QueueTask(t) for t in get_check_queue(user.sid, 8)]
 
+        processed_tasks = tasks.mapping if tasks else {}
+        new_futures = {t.id: get_issue_async(user.sid, t.id)
+                       for t in q if t not in processed_tasks}
         user_data['tasks'] = Tasks({t.id: t for t in q},
                                    q,
-                                   {t.id: get_issue_async(user.sid, t.id)
-                                    for t in q})
+                                   dict(processed_tasks,
+                                        **new_futures))
     else:
         q = user_data['tasks'].order
 
@@ -79,7 +86,8 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
     if not q:
         update.message.reply_text('Ура! Домашки проверены'
                                   if prev_task else
-                                  'Пока что домашек нет...')
+                                  'Пока что домашек нет...',
+                                  reply_markup=greeting_markup)
         return ConversationHandler.END
 
     tasks = [('task#' + str(t.id),
