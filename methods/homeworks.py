@@ -179,7 +179,6 @@ def on_process(bot, update: Update, user_data):
     return handle_hw(bot, update, user_data, prev_task=task)
 
 
-
 def add_handlers(dispatcher: Dispatcher):
     dispatcher.add_handler(CommandHandler('hw', handle_hw,
                                           Filters.private,

@@ -1,4 +1,5 @@
-from .get_top import send_msg
-from .mojno import send_msg
 from .auth import conv_handler
+from .get_top import send_msg
+from .greeting import on_start
 from .homeworks import handle_hw
+from .mojno import send_msg

@@ -29,6 +29,7 @@ delta = datetime.time(hour=22, tzinfo=TIMEZONE)
 j.run_daily(lambda a, b: methods.send_msg(a, b), time=datetime.time(12))
 
 # Specify all methods below
+dispatcher.add_handler(CommandHandler('start', methods.on_start))
 dispatcher.add_handler(CommandHandler('top', methods.get_top.send_msg))
 dispatcher.add_handler(methods.auth.conv_handler)
 dispatcher.add_handler(methods.homeworks.conv_handler)
