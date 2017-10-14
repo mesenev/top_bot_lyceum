@@ -1,13 +1,13 @@
 import peewee
 
-db = peewee.SqliteDatabase('database.db')
+import infra.storage
 
 models = []
 
 
 class BotModel(peewee.Model):
     class Meta:
-        database = db
+        database = infra.storage.db
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)

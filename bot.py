@@ -4,12 +4,9 @@ import locale
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 import database
+import infra
 import methods
 from config import *
-from infra.logging import setup_logger
-
-database.db.connect()
-database.db.create_tables(database.models, safe=True)
 
 with contextlib.suppress(locale.Error):
     locale.setlocale(locale.LC_TIME, "ru_RU")
@@ -18,7 +15,8 @@ updater = Updater(token=BOT_TOKEN)
 j = updater.job_queue
 dispatcher = updater.dispatcher
 
-setup_logger(dispatcher)
+infra.logging.setup_logger(dispatcher)
+infra.storage.setup_database()
 
 dispatcher.add_handler(MessageHandler(Filters.text & Filters.group,
                                       methods.mojno.send_msg))
