@@ -36,11 +36,11 @@ dispatcher.add_handler(methods.homeworks.conv_handler)
 updater.start_polling()
 
 if LOG_CHAT_ID:
+    now = datetime.datetime.now().strftime("%B %d, %H:%M")
     updater.bot.send_message(chat_id=LOG_CHAT_ID,
                              text='Successfully launched!'
-                                  ' Current time is:{} \n Cups of tea: {}'
-                             .format(datetime.datetime.now().strftime("%B %d, %H:%M"),
-                                     CUPS_OF))
+                                  ' Current time is:{} \n'
+                                  ' Cups of tea: {}'.format(now, CUPS_OF))
 
 updater.idle()
 
