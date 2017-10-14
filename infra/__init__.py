@@ -1,3 +1,3 @@
-import infra.i18n
-import infra.logging
-import infra.storage
+from . import i18n
+from . import logging
+from . import storage
