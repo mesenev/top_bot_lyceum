@@ -1,3 +1,4 @@
+import contextlib
 import locale
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
@@ -9,10 +10,8 @@ from config import *
 database.db.connect()
 database.db.create_tables(database.models, safe=True)
 
-try:
+with contextlib.suppress(locale.Error):
     locale.setlocale(locale.LC_TIME, "ru_RU")
-except:
-    pass
 
 updater = Updater(token=BOT_TOKEN)
 j = updater.job_queue
