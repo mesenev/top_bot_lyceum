@@ -90,6 +90,8 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
                                   reply_markup=greeting_markup)
         return ConversationHandler.END
 
+    prev_task = None
+
     tasks = [('task#' + str(t.id),
               '{} -- {}'.format(t.task_title, t.student_name))
              for t in q[:7]]
