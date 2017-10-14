@@ -65,5 +65,5 @@ PREPARE_MESSAGE =[
 
 CONTRIBUTORS = [
     102660981,  # mesenev
-    417614971,  # malyavin
+    82204126,   # malyavin
 ]
