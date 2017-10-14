@@ -70,14 +70,13 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
 
         futures = tasks.futures if tasks else {}
         futures.update({t.id: get_issue_async(user.sid, t.id)
-                       for t in q if t not in futures})
-        user_data['tasks'] = Tasks({t.id: t for t in q},
-                                   q,
-                                   futures)
+                       for t in q if t.id not in futures})
+        tasks = Tasks({t.id: t for t in q}, q, futures)
+        user_data['tasks'] = tasks
     else:
-        q = user_data['tasks'].order
+        q = tasks.order
 
-    if prev_task:
+    if prev_task and prev_task.id in tasks.mapping:
         del tasks.mapping[prev_task.id]
         del tasks.futures[prev_task.id]
         tasks.order.remove(prev_task)
@@ -88,8 +87,6 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
                                   'Пока что домашек нет...',
                                   reply_markup=greeting_markup)
         return ConversationHandler.END
-
-    prev_task = None
 
     tasks = [('task#' + str(t.id),
               '{} -- {}'.format(t.task_title, t.student_name))

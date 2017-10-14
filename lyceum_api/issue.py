@@ -27,6 +27,9 @@ class QueueTask(AnnotatedJson):
     def _extract_id(data, field_name):
         return data['DT_RowData'].get(field_name)
 
+    def __eq__(self, other):
+        return self.id == other.id
+
 
 class Comment(object):
     author: str = ''
