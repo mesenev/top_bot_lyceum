@@ -1,6 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-import database
 import infra
 import methods
 from config import *
@@ -38,4 +37,4 @@ if LOG_CHAT_ID:
 
 updater.idle()
 
-database.db.close()
+infra.storage.db.close()
