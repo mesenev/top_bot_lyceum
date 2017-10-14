@@ -6,6 +6,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import database
 import methods
 from config import *
+from infra.logging import setup_logger
 
 database.db.connect()
 database.db.create_tables(database.models, safe=True)
