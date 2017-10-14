@@ -10,5 +10,5 @@ class BotModel(peewee.Model):
         database = infra.storage.db
 
     def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
+        super().__init_subclass__()
         models.append(cls)
