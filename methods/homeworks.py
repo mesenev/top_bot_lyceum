@@ -195,10 +195,12 @@ def add_handlers(dispatcher: Dispatcher):
                                                 pass_user_data=True))
 
 
-conv_handler = ConversationHandler(
-    entry_points=[CommandHandler('hw', handle_hw,
+hw_handler = CommandHandler('hw', handle_hw,
                                  Filters.private,
-                                 pass_user_data=True)],
+                                 pass_user_data=True)
+
+conv_handler = ConversationHandler(
+    entry_points=[hw_handler],
     states={
         State.task_choose: [CallbackQueryHandler(on_choose,
                                                  pass_user_data=True)],
@@ -206,5 +208,5 @@ conv_handler = ConversationHandler(
                                             on_process,
                                             pass_user_data=True)]
     },
-    fallbacks=[]
+    fallbacks=[hw_handler]
 )
