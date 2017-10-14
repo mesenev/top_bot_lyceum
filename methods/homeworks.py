@@ -68,12 +68,12 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
                                   reply_markup=ReplyKeyboardRemove())
         q = [QueueTask(t) for t in get_check_queue(user.sid, 8)]
 
-        new_tasks = tasks.mapping if tasks else {}
-        new_tasks.update({t.id: get_issue_async(user.sid, t.id)
-                         for t in q if t not in new_tasks})
+        futures = tasks.futures if tasks else {}
+        futures.update({t.id: get_issue_async(user.sid, t.id)
+                       for t in q if t not in futures})
         user_data['tasks'] = Tasks({t.id: t for t in q},
                                    q,
-                                   new_tasks)
+                                   futures)
     else:
         q = user_data['tasks'].order
 
