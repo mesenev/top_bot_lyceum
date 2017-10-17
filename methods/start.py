@@ -2,6 +2,8 @@ import datetime
 
 import telegram
 
+from config import CUPS_OF
+
 custom_keyboard = [['/login', '/hw']]
 reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard,
                                             resize_keyboard=True)
