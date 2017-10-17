@@ -1,6 +1,9 @@
 import random
 
+from telegram import Update, Bot
+
 from config import *
+from database import LyceumUser
 from methods.common import get_common_data_from_web
 
 last_update = datetime.datetime.now() - datetime.timedelta(hours=24)
@@ -53,3 +56,18 @@ def _create_top(kids_list):
     return message
 
 
+def top_activate(bot: Bot, update: Update):
+    #Кейс если пользователь не авторизован
+    author = LyceumUser.get(tgid=update.message.from_user.id)
+    if not author:
+        bot.send_message(chat_id=update.message.chat_id,
+                         message='Вы должны быть авторизованы, прошу прощения.')
+        return
+    if not author.is_teacher:
+        bot.send_message(chat_id=update.message.chat_id,
+                         message='Разумеется, вы должны быть преподавателем для этого.')
+    #Кейс, если топ уже активирован
+    # Кейс, если топ уже активирован
+
+def top_deactivate(bot: Bot, update: Update):
+    pass

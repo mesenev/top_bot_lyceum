@@ -16,11 +16,11 @@ from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
 from telegram.replykeyboardremove import ReplyKeyboardRemove
 from telegram.update import Update
 
-from database.lyceum_user import LyceumUser
+from database.LyceumUser import LyceumUser
 from lyceum_api import get_check_queue
 from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict
 from methods.auth import get_user
-from methods.greeting import reply_markup as greeting_markup
+from methods.start import reply_markup as greeting_markup
 
 
 class State(Enum):
