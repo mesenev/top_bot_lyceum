@@ -5,10 +5,7 @@ import pytz
 CUPS_OF = 28
 LOGIN = ''
 PASSWORD = ''
-LOGIN_URL = 'https://lms.yandexlyceum.ru/accounts/login/'
-LOG_CHAT_ID= ''
-DATA_URL = ''
-SESSION_ID = ''
+LOG_CHAT_ID = ''
 NUMBER_OF_KIDS = 5
 COOLDOWN_FOR_LIST = datetime.timedelta(hours=3)
 TIMEZONE = pytz.timezone('Asia/Vladivostok')

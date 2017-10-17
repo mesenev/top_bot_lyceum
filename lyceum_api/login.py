@@ -12,6 +12,6 @@ def login(username, passwd):
                      'password': passwd,
                      'csrfmiddlewaretoken': s.cookies['csrftoken']})
     if not r.url.startswith(config.LOGIN_URL):
-        return s.cookies['sessionid'], s.cookies['csrftoken']
+        return s.cookies['sessionid'], s.cookies['csrftoken'], r.content.decode()
     else:
         return None, None

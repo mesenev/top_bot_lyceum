@@ -15,7 +15,6 @@ class Tag(NamedTuple):
 
 
 class Parser(HTMLParser):
-
     output: List[str] = None
     _tags_stack: List[Tag] = None
     _classes: typing.Counter[str] = None
@@ -71,3 +70,4 @@ class Parser(HTMLParser):
         # handle_data can be called before any tags
         if self._tags_stack and data.strip():
             self.on_data(self._tags_stack[-1], data.strip())
+

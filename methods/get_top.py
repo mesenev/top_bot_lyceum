@@ -3,7 +3,7 @@ import random
 from telegram import Update, Bot
 
 from config import *
-from database import LyceumUser
+from database import LyceumUser, ActiveTop
 from methods.common import get_common_data_from_web
 
 last_update = datetime.datetime.now() - datetime.timedelta(hours=24)
@@ -56,9 +56,14 @@ def _create_top(kids_list):
     return message
 
 
-def top_activate(bot: Bot, update: Update):
+def top_activate(bot: Bot, update: Update, *args):
     #Кейс если пользователь не авторизован
-    author = LyceumUser.get(tgid=update.message.from_user.id)
+    author: LyceumUser = LyceumUser.get(tgid=update.message.from_user.id)
+    chat_entity = ActiveTop.get(chat_id=update.message.chat_id)
+    if not chat_entity:
+        bot.send_message(chat_id=update.message.chat_id,
+                         message='Бот уже активирован. Чего вы ждали? ')  # TODO: emoji
+        return
     if not author:
         bot.send_message(chat_id=update.message.chat_id,
                          message='Вы должны быть авторизованы, прошу прощения.')
@@ -66,8 +71,19 @@ def top_activate(bot: Bot, update: Update):
     if not author.is_teacher:
         bot.send_message(chat_id=update.message.chat_id,
                          message='Разумеется, вы должны быть преподавателем для этого.')
+    links = author.course_links.split(',')
+    if len(links) > 1:
+        if not args or len(args) > 0 and args[0] not in links:
+            bot.send_message(chat_id=update.message.chat_id,
+                             message='Уточните группу: варианты {}'.format(" ".join(links)))
+            return
+        if args[0] in links:
+            links = [args[0]]
+    chat_entity = ActiveTop.create(chat_id=update.message.chat_id,
+                                   tutor=author, token=author.token, link=links[0])
+    chat_entity.save()
     #Кейс, если топ уже активирован
     # Кейс, если топ уже активирован
 
 def top_deactivate(bot: Bot, update: Update):
-    pass
+    a = ActiveTop.get(update.message.chat_id)

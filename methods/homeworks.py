@@ -16,6 +16,7 @@ from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
 from telegram.replykeyboardremove import ReplyKeyboardRemove
 from telegram.update import Update
 
+from config import HOME_LINK
 from database.LyceumUser import LyceumUser
 from lyceum_api import get_check_queue
 from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict
@@ -119,7 +120,7 @@ def on_choose(bot, update: Update, user_data):
         return ConversationHandler.END
 
     user_data['task'] = task
-    task_url = '\nhttps://lms.yandexlyceum.ru/issue/{}'.format(task.id)
+    task_url = '\n{}/issue/{}'.format(HOME_LINK, task.id)
 
     stud = task.student_url
     stud_name = task.student_name
