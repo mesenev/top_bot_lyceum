@@ -26,7 +26,8 @@ def setup_logger(dispatcher):
                 'class': 'logging.handlers.TimedRotatingFileHandler',
                 'formatter': 'standard',
                 "filename": "logs/info.log",
-                "encoding": "utf8"
+                "encoding": "utf8",
+                "when": 'D'
             },
         },
         'loggers': {
