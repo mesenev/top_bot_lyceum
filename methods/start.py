@@ -19,6 +19,7 @@ def on_start(bot, update):
                               "но скоро заработает.",
                               reply_markup=reply_markup)
 
+
 def send_startup_greeting(bot, chat_id):
     now = datetime.datetime.now().strftime("%B %d, %H:%M")
     text_fmt = ('Successfully launched! '
