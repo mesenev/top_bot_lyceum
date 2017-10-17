@@ -6,9 +6,8 @@ from config import *
 
 updater = Updater(token=BOT_TOKEN)
 j = updater.job_queue
-dispatcher = updater.dispatcher
 
-infra.logging.setup_logger(dispatcher)
+infra.logging.setup_logger(updater.dispatcher)
 infra.storage.setup_database()
 infra.i18n.setup_locale()
 
@@ -19,7 +18,7 @@ j.run_daily(methods.get_top.send_msg,
             time=datetime.time(12))
 
 for handler in methods.METHODS:
-    dispatcher.add_handler(handler)
+    updater.dispatcher.add_handler(handler)
 
 updater.start_polling()
 
