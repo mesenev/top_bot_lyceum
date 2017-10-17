@@ -1,8 +1,11 @@
 import logging
 import logging.config
+import os
 
 
 def setup_logger(dispatcher):
+    os.makedirs('logs', exist_ok=True)
+
     logging.config.dictConfig({
         'version': 1,
         'disable_existing_loggers': False,
