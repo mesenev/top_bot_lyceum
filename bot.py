@@ -23,7 +23,7 @@ for handler in methods.METHODS:
 updater.start_polling()
 
 if LOG_CHAT_ID:
-    methods.greeting.send_startup_greeting(updater.bot, LOG_CHAT_ID)
+    methods.start.send_startup_greeting(updater.bot, LOG_CHAT_ID)
 
 updater.idle()
 
