@@ -1,5 +1,15 @@
-from .auth import conv_handler
-from .get_top import send_msg
-from .greeting import on_start
-from .homeworks import handle_hw
-from .mojno import send_msg
+from telegram.ext import CommandHandler, MessageHandler, Filters
+
+from . import auth
+from . import get_top
+from . import greeting
+from . import homeworks
+from . import mojno
+
+METHODS = [
+    CommandHandler('start', greeting.on_start),
+    MessageHandler(Filters.text & Filters.group, mojno.send_msg),
+    CommandHandler('top', get_top.send_msg),
+    auth.conv_handler,
+    homeworks.conv_handler
+]

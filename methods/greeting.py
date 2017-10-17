@@ -1,3 +1,5 @@
+import datetime
+
 import telegram
 
 custom_keyboard = [['/login', '/hw']]
@@ -11,3 +13,11 @@ def on_start(bot, update):
                               "/top пока не работает, "
                               "но скоро заработает.",
                               reply_markup=reply_markup)
+
+def send_startup_greeting(bot, chat_id):
+    now = datetime.datetime.now().strftime("%B %d, %H:%M")
+    text_fmt = ('Successfully launched! '
+                'Current time is:{} \n'
+                ' Cups of tea: {}')
+    bot.send_message(chat_id=chat_id,
+                     text=text_fmt.format(now, CUPS_OF))
