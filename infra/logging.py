@@ -1,9 +1,15 @@
 import logging
 import logging.config
 import os
+import sys
+import traceback
+
+from config import LOG_CHAT_ID
+
+excepthooks = []
 
 
-def setup_logger(dispatcher):
+def setup_logger():
     os.makedirs('logs', exist_ok=True)
 
     logging.config.dictConfig({
@@ -39,16 +45,30 @@ def setup_logger(dispatcher):
         }
     })
 
-    logfmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(format=logfmt, level=logging.INFO,
-                        filename='log')
-    logger = logging.getLogger(__name__)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
-    logging.getLogger('').addHandler(ch)
+    def on_except(ex_cls, ex, tb):
+        logging.critical(''.join(traceback.format_tb(tb)))
+        logging.critical("Uncaught exception",
+                         exc_info=(ex_cls, ex, tb))
 
-    # log all errors
+        for hook in excepthooks:
+            hook(ex_cls, ex, tb)
+
+    sys.excepthook = on_except
+
+
+def setup_dispatcher_logging(dispatcher):
+    logger = logging.getLogger(__name__)
+
     def error(bot, update, err):
         logger.warning('Update "%s" caused error "%s"' % (update, err))
 
+    # This hooks telegram api-level errors
     dispatcher.add_error_handler(error)
+
+    def on_except(ex_cls, ex, tb):
+        bot = dispatcher.bot
+        bot.send_message(chat_id=LOG_CHAT_ID,
+                         text=''.join(traceback.format_tb(tb)) +
+                              '{}: {}'.format(ex_cls, ex))
+
+    excepthooks.append(on_except)

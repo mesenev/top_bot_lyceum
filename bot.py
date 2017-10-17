@@ -1,3 +1,6 @@
+import infra.logging
+infra.logging.setup_logger()  # this should go before anything else
+
 from telegram.ext import Updater
 
 import infra
@@ -7,7 +10,9 @@ from config import *
 updater = Updater(token=BOT_TOKEN)
 j = updater.job_queue
 
-infra.logging.setup_logger(updater.dispatcher)
+infra.logging.setup_dispatcher_logging(updater.dispatcher)
+
+
 infra.storage.setup_database()
 infra.i18n.setup_locale()
 
