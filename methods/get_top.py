@@ -13,9 +13,15 @@ def _current_time():
     return datetime.datetime.now(tz=TIMEZONE)
 
 
+# noinspection PyTypeChecker,PyCallByClass
 def _get_top(bot, update, **kwargs):
     global last_update
     local_time = _current_time()
+    chat_entity = ActiveTop.get_or_null(ActiveTop, chat_id=update.message.chat_id)
+    if not chat_entity:
+        bot.send_message(chat_id=update.message.chat_id, text="Команда /top не активна, "
+                                                              "пожалуйтесь преподавателю. :)")
+        return
     checkpass = kwargs['checkpass'] if 'checkpass' in kwargs else False
     if update.message.from_user.id in CONTRIBUTORS:
         checkpass = True
@@ -30,7 +36,12 @@ def _get_top(bot, update, **kwargs):
     bot.send_message(chat_id=update.message.chat_id, text=random.choice(PREPARE_MESSAGE))
     if update.message.from_user.id not in CONTRIBUTORS:
         last_update = datetime.datetime.now()
-    kids = get_common_data_from_web()
+    kids = get_common_data_from_web(chat_entity)
+    if kids == -1:
+        bot.send_message(chat_id=update.message.chat_id, text='Ошибка авторизации. Выключаюсь.')
+        bot.send_message(chat_id=chat_entity.tutor.tgid, text='Ошибка авторизации в чате %s'
+                                                              % update.message.chat.title)
+        chat_entity.delete_instance()
     answ = _create_top(kids)
     return answ
 
@@ -56,34 +67,43 @@ def _create_top(kids_list):
     return message
 
 
+# noinspection PyTypeChecker,PyCallByClass
 def top_activate(bot: Bot, update: Update, *args):
-    #Кейс если пользователь не авторизован
-    author: LyceumUser = LyceumUser.get(tgid=update.message.from_user.id)
-    chat_entity = ActiveTop.get(chat_id=update.message.chat_id)
-    if not chat_entity:
+    author: LyceumUser = LyceumUser.get_or_null(LyceumUser, tgid=update.message.from_user.id)
+    chat_entity = ActiveTop.get_or_null(ActiveTop, chat_id=update.message.chat_id)
+    if chat_entity:
         bot.send_message(chat_id=update.message.chat_id,
-                         message='Бот уже активирован. Чего вы ждали? ')  # TODO: emoji
+                         text='Бот уже активирован. Чего вы ждали? 🤔🤔 ')
         return
     if not author:
         bot.send_message(chat_id=update.message.chat_id,
-                         message='Вы должны быть авторизованы, прошу прощения.')
+                         text='Вы должны быть авторизованы, прошу прощения.')
         return
     if not author.is_teacher:
         bot.send_message(chat_id=update.message.chat_id,
-                         message='Разумеется, вы должны быть преподавателем для этого.')
+                         text='Разумеется, вы должны быть преподавателем для этого. 🤔')
     links = author.course_links.split(',')
     if len(links) > 1:
         if not args or len(args) > 0 and args[0] not in links:
             bot.send_message(chat_id=update.message.chat_id,
-                             message='Уточните группу: варианты {}'.format(" ".join(links)))
+                             text='Уточните группу: варианты {}'.format(" ".join(links)))
             return
         if args[0] in links:
             links = [args[0]]
     chat_entity = ActiveTop.create(chat_id=update.message.chat_id,
-                                   tutor=author, token=author.token, link=links[0])
+                                   tutor=author, token=author.sid, url=DATA_URL.format(links[0]))
     chat_entity.save()
-    #Кейс, если топ уже активирован
-    # Кейс, если топ уже активирован
+    bot.send_message(chat_id=update.message.chat_id, text='Успешно активировано! Проверьте '
+                                                          'командой /top')
 
+
+# noinspection PyCallByClass,PyTypeChecker
 def top_deactivate(bot: Bot, update: Update):
-    a = ActiveTop.get(update.message.chat_id)
+    a = ActiveTop.get_or_null(ActiveTop, chat_id=update.message.chat_id)
+    if not a:
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='Здесь бот не запущен, чего вы ждали? 🤔')
+    else:
+        a.delete_instance()
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='Больше не работает!')
