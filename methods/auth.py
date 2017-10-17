@@ -6,7 +6,7 @@ from telegram.message import Message
 from telegram.update import Update
 
 import lyceum_api.login
-from database.lyceum_user import LyceumUser
+from database.LyceumUser import LyceumUser
 
 
 class States(Enum):
@@ -16,7 +16,7 @@ class States(Enum):
 
 def handle_login(bot, update: Update):
     update.message.reply_text('Введите имя пользователя '
-                              '(можно без `@blabla`)')
+                              '(можно без `@lyceum.yaconnect.com`)')
     return States.username
 
 

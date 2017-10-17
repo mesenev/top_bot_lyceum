@@ -3,6 +3,7 @@ from telegram.ext import CommandHandler, MessageHandler, Filters
 from . import auth
 from . import get_top
 from . import greeting
+from . import start
 from . import homeworks
 from . import mojno
 

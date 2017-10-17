@@ -95,7 +95,7 @@ class IssueParser(HtmlParser):
 
 def get_check_queue(sid: str, n: int = 5):
     url = 'https://lms.yandexlyceum.ru/course/ajax_get_queue?' \
-          'draw=2&start=0&length={}&lang=ru&timezone=Asia%2FVladivostok&' \
+          'draw=2&start.py=0&length={}&lang=ru&timezone=Asia%2FVladivostok&' \
           'course_id=34&' \
           'filter=status_field%3D3'.format(n)
 
