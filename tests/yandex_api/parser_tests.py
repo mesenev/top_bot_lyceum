@@ -107,25 +107,6 @@ class IssueParserTestCase(unittest.TestCase):
         with open(file_path, encoding='utf-8') as f:
             self.parser.feed(f.read())
 
-    def _check_comments(self):
-        comments = [{'author_href': '/users/artiom-kulinitch2017/',
-                     'author': 'Кулинич Артём',
-                     'text': 'Отправлено на проверку в Я.Контест.',
-                     'files': ['https://anytask.s3.yandex.net/files/'
-                               'e314cb37-0ff3-44fd-9525-e7c91e2e6ba8/'
-                               'Kolichestvo%20minut%20v%20godu.py']},
-                    {'author_href': None,
-                     'author': 'Лицей Бот',
-                     'text': 'Вердикт Я.Контест: ok',
-                     'files': []},
-                    {'author_href': '/users/malyavin/',
-                     'author': 'Малявин  Никита',
-                     'text': 'тест',
-                     'files': []}]
-
-        parser_comments = [vars(c) for c in self.parser.comments]
-        self.assertListEqual(parser_comments, comments)
-
     def _check_task(self):
         s = ('```\ndays_per_year = 365\n```\n'
              '```\nhours_per_day = 24\n```\n'

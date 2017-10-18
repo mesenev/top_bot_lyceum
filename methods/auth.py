@@ -7,6 +7,7 @@ from telegram.update import Update
 
 import lyceum_api.login
 from database.LyceumUser import LyceumUser
+from lyceum_api.parser import Parser, Tag
 
 
 class States(Enum):
@@ -32,13 +33,20 @@ def handle_password(bot, update, user_data):
     if '@' not in username:
         username += '@lyceum.yaconnect.com'
 
-    sid, token = lyceum_api.login(username, message.text)
+    sid, token, resp = lyceum_api.login(username, message.text)
 
     if sid:
         user, created = LyceumUser.get_or_create(tgid=message.from_user.id)
         user.sid = sid
         user.token = token
         user.username = username
+        p = ProfileParser()
+        p.feed(resp)
+        links = p.get_links()
+        if links:
+            user.is_teacher = True
+            # noinspection PyTypeChecker
+            user.course_links = ','.join(links)
         user.save()
 
         reply = ('Отлично!\n'
@@ -71,3 +79,28 @@ conv_handler = ConversationHandler(
 def get_user(message: Message) -> LyceumUser:
     q = LyceumUser.filter(tgid=message.from_user.id)
     return q[0] if q else None
+
+
+class ProfileParser(Parser):
+    course_links = []
+    in_proper_card = False
+
+    def on_feed(self):
+        pass
+
+    def on_starttag(self, t: Tag):
+        if self.in_proper_card and t.name == 'a':
+            self.course_links.append(t.attrs['href'])
+
+    def on_data(self, t: Tag, data: str):
+        if t.name == 'h5' and 'card-title' in t.classes and 'Преподаватель' in data:
+            self.in_proper_card = True
+
+    def on_endtag(self, t):
+        if self.in_proper_card and t.name == 'div' and 'card' in t.classes:
+            self.in_proper_card = False
+
+    def get_links(self):
+        import re
+
+        return [re.match('.*?([0-9]+)$', x).group(1) for x in self.course_links if x[0] != '#']

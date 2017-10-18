@@ -6,6 +6,7 @@ from typing import List
 
 import requests
 
+from config import HOME_LINK
 from .json_model import AnnotatedJson
 from .parser import Parser as HtmlParser, Tag
 
@@ -94,10 +95,10 @@ class IssueParser(HtmlParser):
 
 
 def get_check_queue(sid: str, n: int = 5):
-    url = 'https://lms.yandexlyceum.ru/course/ajax_get_queue?' \
+    url = '{}/course/ajax_get_queue?' \
           'draw=2&start.py=0&length={}&lang=ru&timezone=Asia%2FVladivostok&' \
           'course_id=34&' \
-          'filter=status_field%3D3'.format(n)
+          'filter=status_field%3D3'.format(HOME_LINK, n)
 
     with requests.Session() as s:
         data = s.get(url, cookies={'sessionid': sid})
@@ -111,7 +112,7 @@ def get_check_queue(sid: str, n: int = 5):
 
 
 def get_issue(sid: str, issue_id: int) -> [str, List[Comment], str]:
-    url = 'https://lms.yandexlyceum.ru/issue/' + str(issue_id)
+    url = HOME_LINK + '/issue/' + str(issue_id)
 
     print('--> Start download issue id', issue_id)
     r = requests.get(url, cookies={'sessionid': sid})
@@ -140,7 +141,7 @@ def issue_send_verdict(sid: str, token: str, issue_id: int,
                        comment: str,
                        on_finish):
     try:
-        url = 'https://lms.yandexlyceum.ru/issue/{}'.format(issue_id)
+        url = '{}/issue/{}'.format(HOME_LINK, issue_id)
         r = requests.post(url,
                           data=dict(csrfmiddlewaretoken=token,
                                     comment_verdict=comment,
