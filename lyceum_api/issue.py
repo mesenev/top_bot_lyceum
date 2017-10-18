@@ -1,8 +1,9 @@
 import asyncio
 import logging
 import traceback
+from enum import Enum
 from json.decoder import JSONDecodeError
-from typing import List
+from typing import List, Union, Callable
 
 import requests
 
@@ -44,10 +45,14 @@ class IssueParser(HtmlParser):
     comments: List[Comment] = None
     current_comment: Comment = None
     token: str = None
+    mark: [int, int] = None
+
+    _mark_found = None
 
     def on_feed(self):
         self.task = ''
         self.comments = []
+        self._mark_found = False
 
     def on_starttag(self, t: Tag):
         if (t.attrs.get('name') == 'csrfmiddlewaretoken'
@@ -87,11 +92,17 @@ class IssueParser(HtmlParser):
                 comment.text += data
             elif t.name == 'a' and 'files' in self._classes:
                 comment.files.append(t.attrs['href'])
+        elif t.name == 'a' and data == 'Оценка':
+            self._mark_found = True
+        elif self._mark_found and 'accordion2-result' in t.classes:
+            self.mark = list(map(float, data.split('из')))
 
-    def on_endtag(self, t):
+    def on_endtag(self, t: Tag):
         if self.current_comment is not None and t.name == 'li':
             self.comments.append(self.current_comment)
             self.current_comment = None
+        elif self._mark_found and t.name == 'div' and 'card' in t.classes:
+            self._mark_found = False
 
 
 def get_check_queue(sid: str, n: int = 5):
@@ -117,12 +128,12 @@ def get_issue(sid: str, issue_id: int) -> [str, List[Comment], str]:
     print('--> Start download issue id', issue_id)
     r = requests.get(url, cookies={'sessionid': sid})
 
-    issue_parser = IssueParser()
-    issue_parser.feed(r.text)
-    issue_parser.close()
+    parser = IssueParser()
+    parser.feed(r.text)
+    parser.close()
     print('<-- Finished download issue id', issue_id)
 
-    return issue_parser.task, issue_parser.comments, issue_parser.token
+    return parser.task, parser.comments, parser.token, parser.mark
 
 
 loop = asyncio.get_event_loop()
@@ -136,20 +147,35 @@ def get_issue_async(sid: str, issue_id: int):
         logger.error(traceback.format_exc())
 
 
+class VerdictType(Enum):
+    status = 'status', 'status_form'
+    mark = 'mark', 'mark_form'
+
+
+Verdict = Union[int, float]
+
+
 def issue_send_verdict(sid: str, token: str, issue_id: int,
-                       verdict: int,
                        comment: str,
-                       on_finish):
+                       verdict_type: VerdictType,
+                       verdict: Verdict,
+                       on_finish: Callable):
+    verdict_key, form_name = verdict_type.value
+    form_data = dict(csrfmiddlewaretoken=token,
+                     comment_verdict=comment,
+                     form_name=form_name)
+    form_data[verdict_key] = verdict
+
+    if verdict_type == VerdictType.mark:
+        form_data['Accepted'] = ''
+
     try:
         url = '{}/issue/{}'.format(HOME_LINK, issue_id)
         r = requests.post(url,
-                          data=dict(csrfmiddlewaretoken=token,
-                                    comment_verdict=comment,
-                                    form_name='status_form',
-                                    status=verdict),
+                          data=form_data,
                           cookies={'sessionid': sid,
                                    'csrftoken': token})
-        logger.log(logging.DEBUG, r.text)
+        logger.debug(r.text)
     except Exception as e:
         logger.log(logging.ERROR,
                    'request send failed. '
@@ -157,6 +183,7 @@ def issue_send_verdict(sid: str, token: str, issue_id: int,
                    'verdict: {}'.format(issue_id, sid, token,
                                         comment, verdict))
     else:
-        print('verdict sent. '
-              'id: {}, status: {}'.format(issue_id, r.status_code))
-        on_finish()
+        logger.info('verdict sent. '
+                     'id: {}, status: {}'.format(issue_id, r.status_code))
+
+        on_finish(r.status_code)

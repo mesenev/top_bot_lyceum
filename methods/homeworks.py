@@ -1,10 +1,12 @@
+import re
 from asyncio.futures import Future
 from enum import Enum, auto
+from functools import partial
 from typing import NamedTuple, List, Dict
 
 import requests
 from telegram.callbackquery import CallbackQuery
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, Filters, RegexHandler
 from telegram.ext.callbackqueryhandler import CallbackQueryHandler
 from telegram.ext.conversationhandler import ConversationHandler
 from telegram.ext.dispatcher import Dispatcher
@@ -19,14 +21,17 @@ from telegram.update import Update
 from config import HOME_LINK
 from database.LyceumUser import LyceumUser
 from lyceum_api import get_check_queue
-from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict
+from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict, VerdictType, Verdict
 from methods.auth import get_user
 from methods.start import reply_markup as greeting_markup
+
+FLOATS = r'(\d+(?:.\d+)?)'
 
 
 class State(Enum):
     task_choose = auto()
     task_process = auto()
+    enter_mark = auto()
 
 
 class Tasks(NamedTuple):
@@ -63,7 +68,7 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
 
     user_data['user'] = user
 
-    tasks = user_data.get('tasks')
+    tasks: Tasks = user_data.get('tasks')
     if not tasks or len(tasks.order) < 8:
         update.message.reply_text('Запрашиваем данные...',
                                   reply_markup=ReplyKeyboardRemove())
@@ -101,12 +106,15 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
     return State.task_choose
 
 
-process_kb = (("На проверке", 3), ("На доработке", 4), ("Зачтено", 5))
+ACCEPT, DECLINE, SKIP = "Зачтено на {:g}", "На доработку", "Пропустить"
+DECLINE_ID = 4
+ACCEPT_RE = ('{}'.join(map(re.escape,
+                           ACCEPT.split('{:g}'))).format(FLOATS)
+             + '|' + FLOATS)
 
 
 def on_choose(bot, update: Update, user_data):
     query: CallbackQuery = update.callback_query
-    user: LyceumUser = user_data['user']
 
     task, tid = query.data.split('#')
     if task != 'task':
@@ -119,19 +127,27 @@ def on_choose(bot, update: Update, user_data):
     if not task:
         return ConversationHandler.END
 
-    user_data['task'] = task
     task_url = '\n{}/issue/{}'.format(HOME_LINK, task.id)
 
     stud = task.student_url
     stud_name = task.student_name
 
-    descr, comments, token = loop.run_until_complete(tasks.futures[tid])
-    query.message.reply_text(descr + task_url,
+    result = loop.run_until_complete(tasks.futures[tid])
+
+    descr, comments, token, (mark, max_mark) = result
+
+    mark_text = '\n\nОценка: {:g} из {:g}'.format(mark, max_mark)
+    query.message.reply_text(descr + task_url + mark_text,
                              parse_mode=ParseMode.MARKDOWN)
 
-    user_data['token'] = token
+    variants = [DECLINE, SKIP, ACCEPT.format(max_mark), '...']
 
-    kb = [(i for i, j in process_kb)]
+    user_data['task'] = task
+    user_data['token'] = token
+    user_data['max_mark'] = max_mark
+    user_data['variants'] = set(variants)
+
+    kb = [variants]
 
     pyfiles = [f for c in comments for f in c.files
                if c.author_href == stud and f.endswith('.py')]
@@ -161,31 +177,73 @@ def on_choose(bot, update: Update, user_data):
     return State.task_process
 
 
-def on_process(bot, update: Update, user_data):
-    message: Message = update.message
-    pk = dict(process_kb)
-    if message.text not in pk:
-        user_data['comment'] = message.text
-        message.reply_text('Комментарий принят. Теперь вердикт.')
-        return State.task_process
+def on_verdict_sent(msg: Message, reply: str, result: int):
+    msg.reply_text('Something went wrong... '
+                   'Please contact developers'
+                   if result == 500 else reply)
 
+
+def send_verdict(msg: Message,
+                 user_data,
+                 verdict_type: VerdictType,
+                 verdict: Verdict,
+                 reply: str):
     user: LyceumUser = user_data['user']
     task: QueueTask = user_data['task']
 
-    loop.run_in_executor(None,
-                         issue_send_verdict,
-                         user.sid,
-                         user_data['token'],
-                         task.id,
-                         pk[message.text],
-                         user_data.get('comment', ''),
-                         lambda: message.reply_text('Отправлено: '
-                                                    + message.text))
+    send = partial(loop.run_in_executor, None, issue_send_verdict)
+
+    send(user.sid,
+         user_data['token'],
+         task.id,
+         user_data.get('comment', ''),
+         verdict_type,
+         verdict,
+         partial(on_verdict_sent, msg, reply))
+
+
+def on_process(bot, update: Update, user_data):
     user_data['comment'] = ''
+    return handle_hw(bot, update, user_data, prev_task=user_data['task'])
 
-    tasks: Tasks = user_data['tasks']
 
-    return handle_hw(bot, update, user_data, prev_task=task)
+def on_decline(bot, update: Update, user_data):
+    send_verdict(update.message,
+                 user_data,
+                 VerdictType.status,
+                 DECLINE_ID,
+                 'Отправлено: ' + DECLINE)
+    return on_process(bot, update, user_data)
+
+
+def on_accept(bot, update: Update, user_data):
+    text = update.message.text
+
+    mark = ''.join(re.findall(ACCEPT_RE, text)[0])
+
+    send_verdict(update.message,
+                 user_data,
+                 VerdictType.mark,
+                 float(mark),
+                 'Выставлена оценка: ' + mark)
+    return on_process(bot, update, user_data)
+
+
+def on_comment(bot, update: Update, user_data):
+    message: Message = update.message
+    user_data['comment'] = message.text
+    message.reply_text('Комментарий принят. Теперь вердикт.')
+    return State.task_process
+
+
+def on_mark(bot, update: Update, user_data):
+    msg: Message = update.message
+    max_mark = int(user_data['max_mark'])
+    kb = [list(map(str, range(max_mark//5, max_mark, max_mark//5)))]
+
+    msg.reply_text('Выберите оценку, или введите свою',
+                   reply_markup=ReplyKeyboardMarkup(kb, True, True))
+    return State.task_process
 
 
 def add_handlers(dispatcher: Dispatcher):
@@ -197,16 +255,28 @@ def add_handlers(dispatcher: Dispatcher):
 
 
 hw_handler = CommandHandler('hw', handle_hw,
-                                 Filters.private,
-                                 pass_user_data=True)
+                            Filters.private,
+                            pass_user_data=True)
 
 conv_handler = ConversationHandler(
     entry_points=[hw_handler],
     states={
         State.task_choose: [CallbackQueryHandler(on_choose,
                                                  pass_user_data=True)],
-        State.task_process: [MessageHandler(Filters.text,
-                                            on_process,
+        State.task_process: [RegexHandler('^{}$'.format(SKIP),
+                                          handle_hw,
+                                          pass_user_data=True),
+                             RegexHandler('^{}$'.format(ACCEPT_RE),
+                                          on_accept,
+                                          pass_user_data=True),
+                             RegexHandler('^{}$'.format(DECLINE),
+                                          on_decline,
+                                          pass_user_data=True),
+                             RegexHandler('^\.\.\.$',
+                                          on_mark,
+                                          pass_user_data=True),
+                             MessageHandler(Filters.text,
+                                            on_comment,
                                             pass_user_data=True)]
     },
     fallbacks=[hw_handler]
