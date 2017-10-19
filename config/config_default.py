@@ -48,6 +48,6 @@ PREPARE_MESSAGE =[
 ]
 
 CONTRIBUTORS = [
-    102660981,  # mesenev
+    #102660981,  # mesenev
     82204126,   # malyavin
 ]
