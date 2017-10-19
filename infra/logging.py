@@ -19,6 +19,9 @@ def setup_logger():
             'standard': {
                 'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
             },
+            'tiny': {
+                '%(asctime)s: %(message)s'
+            }
         },
         'handlers': {
             "console": {
@@ -38,7 +41,7 @@ def setup_logger():
             'error': {
                 'level': 'ERROR',
                 'class': 'logging.handlers.TimedRotatingFileHandler',
-                'formatter': 'standard',
+                'formatter': 'tiny',
                 "filename": "logs/error.log",
                 "encoding": "utf8",
                 "when": 'D'
