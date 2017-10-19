@@ -78,7 +78,9 @@ class IssueParser(HtmlParser):
             if 'tex-monospace' in t.classes:
                 data = "```\n" + data + "\n```\n"
             elif t.name == 'a':
-                data = '[{}]({})'.format(data, t.attrs.get('href', ''))
+                data = ' [{}]({})'.format(data, t.attrs.get('href', ''))
+            else:
+                data = ' ' + data
 
             self.task += data
         elif (t.name == 'a'

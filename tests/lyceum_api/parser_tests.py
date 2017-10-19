@@ -106,26 +106,47 @@ class IssueParserTestCase(unittest.TestCase):
         with open(file_path, encoding='utf-8') as f:
             self.parser.feed(f.read())
 
+    def _check_comments(self):
+        comments = [{'author_href': '/users/vasiliy-pupkin2017/',
+                     'author': 'Василий Пупкин',
+                     'text': 'Отправлено на проверку',
+                     'files': ['https://lyceum.net/files/'
+                                              'e314cb37-0ff3-44fd-9525-e7c91e2e6ba8/'
+                                              'Kolichestvo%20minut%20v%20godu.py']},
+                    {'author_href': None,
+                     'author': 'Лицей Бот',
+                     'text': 'Вердикт: ok',
+                     'files': []},
+                    {'author_href': '/users/monty/',
+                     'author': 'Монти Пайтон',
+                     'text': 'тест',
+                     'files': []}]
+
+        parser_comments = [vars(c) for c in self.parser.comments]
+        self.assertListEqual(parser_comments, comments)
+
     def _check_task(self):
         s = ('```\ndays_per_year = 365\n```\n'
              '```\nhours_per_day = 24\n```\n'
              '```\nminutes_per_hour = 60\n```\n'
-             'Допишите программу так, чтобы она выводила '
-             'количество минут в (не високосном) году, '
-             'используя эти данные.Формат выводаВыводится '
-             'одно число.')
+             ' Lorem Ipsum - это текст-"рыба", часто'
+             ' используемый в печати и вэб-дизайне.'
+             ' Lorem Ipsum является стандартной "рыбой"'
+             ' для текстов на латинице с начала XVI века.'
+             ' Формат вывода Выводится одно число.')
+        self.maxDiff = None
         self.assertEqual(s, self.parser.task)
 
     def test_comments(self):
-        self._feed_file('issue_comments.html')
+        self._feed_file('issue_comments.html.test')
         self._check_comments()
 
     def test_task(self):
-        self._feed_file('issue_task.html')
+        self._feed_file('issue_task.html.test')
         self._check_task()
 
     def test_full_page(self):
-        self._feed_file('issue_page.html')
+        self._feed_file('issue_page.html.test')
         self._check_task()
         self._check_comments()
 

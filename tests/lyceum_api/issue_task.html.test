@@ -1,0 +1,47 @@
+<div class="card card-block">
+    <h5 class="card-title">Количество минут в году (*)
+        <a class="btn btn-secondary btn-sm btn-square btn-history-task-text" data-toggle="collapse" href="#task-text"
+           aria-expanded="false" aria-controls="task-text">
+            <span class="fa fa-caret-down"></span>
+        </a>
+    </h5>
+    <div class="collapse" id="task-text">
+        <div class="problem-statement">
+            <div class="header">
+                <h1 class="title"><span style="color: #ff0000;">Количество минут в году</span></h1>
+                <table class="table table-sm">
+                    <tbody>
+                    <tr class="time-limit">
+                        <td class="property-title">Ограничение времени</td>
+                        <td>1&nbsp;секунда</td>
+                    </tr>
+                    <tr class="memory-limit">
+                        <td class="property-title">Ограничение памяти</td>
+                        <td>64Mb</td>
+                    </tr>
+                    <tr class="input-file">
+                        <td class="property-title">Ввод</td>
+                        <td colspan="1">стандартный ввод или input.txt</td>
+                    </tr>
+                    <tr class="output-file">
+                        <td class="property-title">Вывод</td>
+                        <td colspan="1">стандартный вывод или output.txt</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h2>&nbsp;</h2>
+            <div class="legend">
+                <p><span class="tex-monospace">days_per_year = 365</span> <br/> <span class="tex-monospace">hours_per_day = 24</span>
+                    <br/> <span class="tex-monospace">minutes_per_hour = 60</span></p>
+                <p>Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне.
+                    Lorem Ipsum является стандартной "рыбой"
+                    для текстов на латинице с начала XVI века.</p>
+            </div>
+            <h2>Формат вывода</h2>
+            <div class="output-specification">
+                <p>Выводится одно число.</p>
+            </div>
+        </div>
+    </div>
+</div>
