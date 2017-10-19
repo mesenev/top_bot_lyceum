@@ -35,10 +35,18 @@ def setup_logger():
                 "encoding": "utf8",
                 "when": 'D'
             },
+            'error': {
+                'level': 'ERROR',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'formatter': 'standard',
+                "filename": "logs/error.log",
+                "encoding": "utf8",
+                "when": 'D'
+            },
         },
         'loggers': {
             '': {
-                'handlers': ['console', 'default'],
+                'handlers': ['console', 'default', 'error'],
                 'level': 'INFO',
                 'propagate': True
             }
