@@ -1,3 +1,4 @@
+import asyncio
 import os
 import unittest
 from http import HTTPStatus
@@ -5,7 +6,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from unittest import mock
 
-from lyceum_api.issue import get_issue
+from lyceum_api.issue import get_issue, get_issue_async
 from .parser_tests import IssueParserTestCase, dirname
 
 
@@ -42,9 +43,24 @@ class IssueTestCase(unittest.TestCase):
         self.assertEqual(task, self.task_text)
         self.assertEqual(mark, [7.1, 17])
 
+    mock_config = mock.patch('config.HOME_LINK', new=host)
+    mock_issue = mock.patch('lyceum_api.issue.HOME_LINK',
+                            new=host, create=True)
 
-    @mock.patch('config.HOME_LINK', new=host)
-    @mock.patch('lyceum_api.issue.HOME_LINK', new=host, create=True)
+    @mock_config
+    @mock_issue
     def test_issue(self, *_):
         ret = get_issue('123', 60344)
         self._check_issue(*ret)
+
+    @mock_config
+    @mock_issue
+    def test_issue_async(self, *_):
+        tasks = []
+        loop = asyncio.get_event_loop()
+        for i in range(40):
+            task = loop.run_in_executor(None,
+                                        get_issue_async, '123', 60344)
+            tasks.append(task)
+
+        loop.run_until_complete(asyncio.gather(*tasks))
