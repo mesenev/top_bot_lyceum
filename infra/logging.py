@@ -72,6 +72,11 @@ def setup_dispatcher_logging(dispatcher):
 
     def error(bot, update, err):
         logger.warning('Update "%s" caused error "%s"' % (update, err))
+        if update:
+            message = update.message or update.callback_query.message
+            if message:
+                message.reply_text('Произошла какая-то ошибка. '
+                                   'Мы уже работаем над этим...')
 
     # This hooks telegram api-level errors
     dispatcher.add_error_handler(error)
