@@ -4,3 +4,5 @@ future
 requests
 pytz
 python-telegram-bot
+pygments
+pillow

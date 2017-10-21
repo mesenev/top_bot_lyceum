@@ -2,9 +2,13 @@ import re
 from asyncio.futures import Future
 from enum import Enum, auto
 from functools import partial
+from io import BytesIO
 from typing import NamedTuple, List, Dict
 
 import requests
+from pygments import highlight
+from pygments.formatters import ImageFormatter
+from pygments.lexers import PythonLexer
 from telegram.callbackquery import CallbackQuery
 from telegram.ext import CommandHandler, MessageHandler, Filters, RegexHandler
 from telegram.ext.callbackqueryhandler import CallbackQueryHandler
@@ -136,10 +140,6 @@ def on_choose(bot, update: Update, user_data):
 
     descr, comments, token, (mark, max_mark) = result
 
-    mark_text = '\n\nОценка: {:g} из {:g}'.format(mark, max_mark)
-    query.message.reply_text(descr + task_url + mark_text,
-                             parse_mode=ParseMode.MARKDOWN)
-
     variants = [DECLINE, SKIP, ACCEPT.format(max_mark), '...']
 
     user_data['task'] = task
@@ -148,6 +148,7 @@ def on_choose(bot, update: Update, user_data):
     user_data['variants'] = set(variants)
 
     kb = [variants]
+    descr_kb = [[]]
 
     pyfiles = [f for c in comments for f in c.files
                if c.author_href == stud and f.endswith('.py')]
@@ -165,6 +166,14 @@ def on_choose(bot, update: Update, user_data):
 
         text = ('Автор: {}\nРешение:\n'
                 '```\n{}\n```'.format(stud_name, r.text))
+        descr_kb[0] = [InlineKeyboardButton('Загрузить решение с подсветкой',
+                                            callback_data='get_img')]
+        user_data['solution'] = r.text
+
+    mark_text = '\n\nОценка: {:g} из {:g}'.format(mark, max_mark)
+    query.message.reply_text(descr + task_url + mark_text,
+                             parse_mode=ParseMode.MARKDOWN,
+                             reply_markup=InlineKeyboardMarkup(descr_kb, one_time_keyboard=True))
 
     keyboard = ReplyKeyboardMarkup(kb,
                                    one_time_keyboard=True,
@@ -175,6 +184,21 @@ def on_choose(bot, update: Update, user_data):
                        keyboard=keyboard)
 
     return State.task_process
+
+
+def on_get_img(bot, update: Update, user_data):
+    query: CallbackQuery = update.callback_query
+
+    if query.data != 'get_img':
+        return State.task_process
+
+    code = user_data['solution']
+    img = highlight(code, PythonLexer(), ImageFormatter())
+
+    msg: Message = query.message
+    msg.reply_photo(BytesIO(img))
+    return State.task_process
+
 
 
 def on_verdict_sent(msg: Message, reply: str, result: int):
@@ -277,7 +301,9 @@ conv_handler = ConversationHandler(
                                           pass_user_data=True),
                              MessageHandler(Filters.text,
                                             on_comment,
-                                            pass_user_data=True)]
+                                            pass_user_data=True),
+                             CallbackQueryHandler(on_get_img,
+                                                  pass_user_data=True)]
     },
     fallbacks=[hw_handler]
 )
