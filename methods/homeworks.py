@@ -6,6 +6,7 @@ from io import BytesIO
 from typing import NamedTuple, List, Dict
 
 import requests
+from PIL import Image
 from pygments import highlight
 from pygments.formatters import ImageFormatter
 from pygments.lexers import PythonLexer
@@ -192,13 +193,23 @@ def on_get_img(bot, update: Update, user_data):
     if query.data != 'get_img':
         return State.task_process
 
-    code = user_data['solution']
-    img = highlight(code, PythonLexer(), ImageFormatter())
+    task:QueueTask = user_data['task']
+    code: str = user_data['solution']
+    img = BytesIO(highlight(code,
+                            PythonLexer(encoding='utf-8'),
+                            ImageFormatter()))
+    img.name = 'code_{}.png'.format(task.id)
+
+    im = Image.open(img)
+    width, height = im.size
+    img.seek(0)
 
     msg: Message = query.message
-    msg.reply_photo(BytesIO(img))
+    if max(width, height) <= 1280:
+        msg.reply_photo(img)
+    else:
+        msg.reply_document(img)
     return State.task_process
-
 
 
 def on_verdict_sent(msg: Message, reply: str, result: int):
