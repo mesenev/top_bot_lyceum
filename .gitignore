@@ -11,7 +11,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
-/.idea
+.idea/
 develop-eggs/
 dist/
 downloads/
@@ -104,6 +104,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-config.py
 log
 *.db
+config/config.py

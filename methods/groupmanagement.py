@@ -1,6 +1,6 @@
 import random
 
-from config_default import CONTRIBUTORS
+from config.config_default import CONTRIBUTORS
 from database import LyceumGroup, Student
 
 

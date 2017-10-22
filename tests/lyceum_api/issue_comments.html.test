@@ -1,4 +1,4 @@
-﻿<div class="card card-block">
+<div class="card card-block">
     <h5 class="card-title">Обсуждение задачи</h5>
     <ul class="history">
         
@@ -8,14 +8,14 @@
             <li>
                 <div class="row">
                     <div class="col-xs-offset-1 col-xs-11">
-                        <strong><a class="card-link" href="/users/artiom-kulinitch2017/" style="color:#373a3c;">
-                            Кулинич Артём</a>&nbsp;</strong>
+                        <strong><a class="card-link" href="/users/vasiliy-pupkin2017/" style="color:#373a3c;">
+                            Василий Пупкин</a>&nbsp;</strong>
                         <small class="text-muted">
                             <i class="fa fa-clock-o fa-flip-horizontal"></i> 08 Окт 15:44 
                         </small>
                     </div>
                     <div class="user_img col-xs-1 pull-xs-left">
-                        <a class="card-link" href="/users/artiom-kulinitch2017/">
+                        <a class="card-link" href="/users/vasiliy-pupkin2017/">
                             <img class="avatar" src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm&f=y" style="width: 50px; height: 50px;">
                         </a>
                         
@@ -23,14 +23,14 @@
                     <div class="col-xs-11">
                         <div class="not_mine history-body">
                             
-                                <div class="issue-page-comment not-sanitize"><p>Отправлено на проверку в Я.Контест.</p></div>
+                                <div class="issue-page-comment not-sanitize"><p>Отправлено на проверку</p></div>
                             
                             
                                 <div class="files">
 
                                     <i class="fa fa-file-o"></i>
                                     
-                                        <a href=https://anytask.s3.yandex.net/files/e314cb37-0ff3-44fd-9525-e7c91e2e6ba8/Kolichestvo%20minut%20v%20godu.py>Kolichestvo minut v godu.py</a>
+                                        <a href=https://lyceum.net/files/e314cb37-0ff3-44fd-9525-e7c91e2e6ba8/Kolichestvo%20minut%20v%20godu.py>Kolichestvo minut v godu.py</a>
                                     
 
                                 </div>
@@ -59,14 +59,14 @@
                     </div>
                     <div class="user_img col-xs-1 pull-xs-left">
                         <a class="card-link" >
-                            <img class="avatar" src="https://anytask.s3.yandex.net/images/user_1/avatar" style="width: 50px; height: 50px;">
+                            <img class="avatar" src="https://lyceum.net/images/user_1/avatar" style="width: 50px; height: 50px;">
                         </a>
                         
                     </div>
                     <div class="col-xs-11">
                         <div class="not_mine history-body">
                             
-                                <div class="contest-response-comment not-sanitize"><p>Вердикт Я.Контест: ok</p></div>
+                                <div class="contest-response-comment not-sanitize"><p>Вердикт: ok</p></div>
                             
                             
                         </div>
@@ -85,14 +85,14 @@
             <li>
                 <div class="row">
                     <div class="col-xs-12">
-                        <strong><a class="card-link" href="/users/malyavin/" style="color:#373a3c;">
-                            Малявин  Никита</a>&nbsp;</strong>
+                        <strong><a class="card-link" href="/users/monty/" style="color:#373a3c;">
+                            Монти Пайтон</a>&nbsp;</strong>
                         <small class="text-muted">
                             <i class="fa fa-clock-o fa-flip-horizontal"></i> 09 Окт 23:48 
                         </small>
                     </div>
                     <div class="user_img col-xs-1 pull-xs-right">
-                        <a class="card-link" href="/users/malyavin/">
+                        <a class="card-link" href="/users/monty/">
                             <img class="avatar" src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm&f=y" style="width: 50px; height: 50px;">
                         </a>
                         

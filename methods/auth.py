@@ -5,8 +5,10 @@ from telegram.ext.conversationhandler import ConversationHandler
 from telegram.message import Message
 from telegram.update import Update
 
+from config import TAIL
 import lyceum_api.login
-from database.lyceum_user import LyceumUser
+from database.LyceumUser import LyceumUser
+from lyceum_api.parser import Parser, Tag
 
 
 class States(Enum):
@@ -16,7 +18,7 @@ class States(Enum):
 
 def handle_login(bot, update: Update):
     update.message.reply_text('Введите имя пользователя '
-                              '(можно без `@blabla`)')
+                              '(можно без `%s`)' % TAIL)
     return States.username
 
 
@@ -30,18 +32,37 @@ def handle_password(bot, update, user_data):
     message: Message = update.message
     username = user_data['username']
     if '@' not in username:
-        username += '@lyceum.yaconnect.com'
+        username += '' + TAIL
 
-    sid, token = lyceum_api.login(username, message.text)
+    sid, token, resp = lyceum_api.login(username, message.text)
 
-    user, created = LyceumUser.get_or_create(tgid=message.from_user.id)
-    user.sid = sid
-    user.token = token
-    user.username = username
-    user.save()
+    if sid:
+        user, created = LyceumUser.get_or_create(tgid=message.from_user.id)
+        user.sid = sid
+        user.token = token
+        user.username = username
+        p = ProfileParser()
+        p.feed(resp)
+        links = p.get_links()
+        if links:
+            user.is_teacher = True
+            # noinspection PyTypeChecker
+            user.course_links = ','.join(links)
+        user.save()
+        if user.is_teacher:
+            reply = ('Отлично!\n'
+                     'Ваш новый sid: {}.'
+                     ' Не забудьте его!\n'
+                     'Можете начать проверять домашки.\n'
+                     'Введите /hw'.format(sid))
+        else:
+            reply = ('Добро пожаловать на борт, салага!\n'
+                     'Ваш новый sid: {}.'.format(sid)
+                     )
+    else:
+        reply = 'Неверный логин и/или пароль'
 
-    update.message.reply_text('Ваш новый sid: {}.'
-                              ' Не забудьте его!'.format(sid))
+    update.message.reply_text(reply)
     return ConversationHandler.END
 
 
@@ -63,3 +84,28 @@ conv_handler = ConversationHandler(
 def get_user(message: Message) -> LyceumUser:
     q = LyceumUser.filter(tgid=message.from_user.id)
     return q[0] if q else None
+
+
+class ProfileParser(Parser):
+    course_links = []
+    in_proper_card = False
+
+    def on_feed(self):
+        pass
+
+    def on_starttag(self, t: Tag):
+        if self.in_proper_card and t.name == 'a':
+            self.course_links.append(t.attrs['href'])
+
+    def on_data(self, t: Tag, data: str):
+        if t.name == 'h5' and 'card-title' in t.classes and 'Преподаватель' in data:
+            self.in_proper_card = True
+
+    def on_endtag(self, t):
+        if self.in_proper_card and t.name == 'div' and 'card' in t.classes:
+            self.in_proper_card = False
+
+    def get_links(self):
+        import re
+
+        return [re.match('.*?([0-9]+)$', x).group(1) for x in self.course_links if x[0] != '#']
