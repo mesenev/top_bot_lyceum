@@ -1,11 +1,9 @@
 import random
 
 from telegram import Update, Bot
-
 from config import *
 from database import LyceumUser, ActiveTop
 from methods.common import get_common_data_from_web
-
 last_update = datetime.datetime.now() - datetime.timedelta(hours=24)
 
 
@@ -14,7 +12,7 @@ def _current_time():
 
 
 # noinspection PyTypeChecker,PyCallByClass
-def _get_top(bot, update, **kwargs):
+def get_top(bot, update, **kwargs):
     global last_update
     local_time = _current_time()
     chat_entity = ActiveTop.get_or_null(ActiveTop, chat_id=update.message.chat_id)
@@ -43,12 +41,7 @@ def _get_top(bot, update, **kwargs):
                                                               % update.message.chat.title)
         chat_entity.delete_instance()
     answ = _create_top(kids)
-    return answ
-
-
-def send_msg(bot, update, **kwargs):
-    message = _get_top(bot, update, **kwargs)
-    bot.send_message(chat_id=update.message.chat_id, text=message)
+    bot.send_message(chat_id=update.message.chat_id, text=answ)
 
 
 def _create_top(kids_list):

@@ -5,6 +5,7 @@ from telegram.ext.conversationhandler import ConversationHandler
 from telegram.message import Message
 from telegram.update import Update
 
+from config import TAIL
 import lyceum_api.login
 from database.LyceumUser import LyceumUser
 from lyceum_api.parser import Parser, Tag
@@ -17,7 +18,7 @@ class States(Enum):
 
 def handle_login(bot, update: Update):
     update.message.reply_text('Введите имя пользователя '
-                              '(можно без `@lyceum.yaconnect.com`)')
+                              '(можно без `%s`)' % TAIL)
     return States.username
 
 
@@ -31,7 +32,7 @@ def handle_password(bot, update, user_data):
     message: Message = update.message
     username = user_data['username']
     if '@' not in username:
-        username += '@lyceum.yaconnect.com'
+        username += '' + TAIL
 
     sid, token, resp = lyceum_api.login(username, message.text)
 
@@ -48,12 +49,16 @@ def handle_password(bot, update, user_data):
             # noinspection PyTypeChecker
             user.course_links = ','.join(links)
         user.save()
-
-        reply = ('Отлично!\n'
-                 'Ваш новый sid: {}.'
-                 ' Не забудьте его!\n'
-                 'Можете начать проверять домашки.'
-                 'Введите /hw'.format(sid))
+        if user.is_teacher:
+            reply = ('Отлично!\n'
+                     'Ваш новый sid: {}.'
+                     ' Не забудьте его!\n'
+                     'Можете начать проверять домашки.\n'
+                     'Введите /hw'.format(sid))
+        else:
+            reply = ('Добро пожаловать на борт, салага!\n'
+                     'Ваш новый sid: {}.'.format(sid)
+                     )
     else:
         reply = 'Неверный логин и/или пароль'
 

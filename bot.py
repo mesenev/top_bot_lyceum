@@ -14,9 +14,6 @@ infra.logging.setup_dispatcher_logging(updater.dispatcher)
 infra.storage.setup_database()
 infra.i18n.setup_locale()
 
-# TODO: Write flexible datetime
-j.run_daily(methods.get_top.send_msg,
-            time=datetime.time(12))
 
 for handler in methods.METHODS:
     updater.dispatcher.add_handler(handler)
