@@ -11,7 +11,7 @@ METHODS = [
     CommandHandler('start', start.on_start),
     CommandHandler('raise', debug.on_raise),
     MessageHandler(Filters.text & Filters.group, mojno.send_msg),
-    CommandHandler('top', get_top.send_msg),
+    CommandHandler('top', get_top.get_top),
     CommandHandler('top-activate', get_top.top_activate),
     CommandHandler('top-deactivate', get_top.top_deactivate),
     auth.conv_handler,
