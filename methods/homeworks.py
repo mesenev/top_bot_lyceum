@@ -197,8 +197,8 @@ def on_get_img(bot, update: Update, user_data):
     task: QueueTask = user_data['task']
     code: str = user_data['solution']
     img = BytesIO(highlight(code,
-                            PythonLexer(font_name=CODE_FONT),
-                            ImageFormatter()))
+                            PythonLexer(),
+                            ImageFormatter(font_name=CODE_FONT)))
     img.name = 'code_{}.png'.format(task.id)
 
     im = Image.open(img)
