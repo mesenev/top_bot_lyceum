@@ -284,15 +284,6 @@ def on_mark(bot, update: Update, user_data):
     return State.task_process
 
 
-def on_test_hl(bot, update: Update, user_data):
-    code = open('tests/test_python_code.testpy').read()
-    update.message.reply_document(hl_code(code, 'test', user_data))
-
-
-test_highlight_handler = CommandHandler('testhl', on_test_hl,
-                                        Filters.private,
-                                        pass_user_data=True)
-
 hw_handler = CommandHandler('hw', handle_hw,
                             Filters.private,
                             pass_user_data=True)

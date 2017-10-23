@@ -13,6 +13,5 @@ METHODS = [
     CommandHandler('top-deactivate', get_top.top_deactivate),
     auth.conv_handler,
     homeworks.conv_handler,
-    homeworks.test_highlight_handler,
     style.conv_handler
 ]
