@@ -1,6 +1,7 @@
 from peewee import CharField, IntegerField, ForeignKeyField
 
-from database import LyceumUser, BotModel
+from .database import BotModel
+from .LyceumUser import LyceumUser
 
 
 class ActiveTop(BotModel):
