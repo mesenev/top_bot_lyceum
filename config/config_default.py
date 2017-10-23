@@ -9,6 +9,7 @@ LOG_CHAT_ID = ''
 NUMBER_OF_KIDS = 5
 COOLDOWN_FOR_LIST = datetime.timedelta(hours=3)
 TIMEZONE = pytz.timezone('Asia/Vladivostok')
+CODE_FONT = 'DejaVu Sans Mono'
 
 
 TITLES_LIST = [

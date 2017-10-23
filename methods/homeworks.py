@@ -8,8 +8,8 @@ from typing import NamedTuple, List, Dict
 import requests
 from PIL import Image
 from pygments import highlight
-from pygments.formatters import ImageFormatter
-from pygments.lexers import PythonLexer
+from pygments.formatters.img import ImageFormatter
+from pygments.lexers.python import PythonLexer
 from telegram.callbackquery import CallbackQuery
 from telegram.ext import CommandHandler, MessageHandler, Filters, RegexHandler
 from telegram.ext.callbackqueryhandler import CallbackQueryHandler
@@ -23,7 +23,7 @@ from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
 from telegram.replykeyboardremove import ReplyKeyboardRemove
 from telegram.update import Update
 
-from config import HOME_LINK
+from config import HOME_LINK, CODE_FONT
 from database.LyceumUser import LyceumUser
 from lyceum_api import get_check_queue
 from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict, VerdictType, Verdict
@@ -174,7 +174,8 @@ def on_choose(bot, update: Update, user_data):
     mark_text = '\n\nОценка: {:g} из {:g}'.format(mark, max_mark)
     query.message.reply_text(descr + task_url + mark_text,
                              parse_mode=ParseMode.MARKDOWN,
-                             reply_markup=InlineKeyboardMarkup(descr_kb, one_time_keyboard=True))
+                             reply_markup=InlineKeyboardMarkup(descr_kb,
+                                                               one_time_keyboard=True))
 
     keyboard = ReplyKeyboardMarkup(kb,
                                    one_time_keyboard=True,
@@ -193,10 +194,10 @@ def on_get_img(bot, update: Update, user_data):
     if query.data != 'get_img':
         return State.task_process
 
-    task:QueueTask = user_data['task']
+    task: QueueTask = user_data['task']
     code: str = user_data['solution']
     img = BytesIO(highlight(code,
-                            PythonLexer(encoding='utf-8'),
+                            PythonLexer(font_name=CODE_FONT),
                             ImageFormatter()))
     img.name = 'code_{}.png'.format(task.id)
 
