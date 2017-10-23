@@ -4,7 +4,7 @@ import telegram
 
 from config import CUPS_OF
 
-custom_keyboard = [['/login', '/hw']]
+custom_keyboard = [['/login', '/hw', '/top']]
 reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard,
                                             resize_keyboard=True)
 
@@ -15,8 +15,7 @@ def on_start(bot, update):
     update.message.reply_text("Велкам! Для начала залогиньтесь "
                               "(если вы ещё не)."
                               " Потом проверьте домашки. "
-                              "/top пока не работает, "
-                              "но скоро заработает.",
+                              "/top покажет лидеров",
                               reply_markup=reply_markup)
 
 
