@@ -2,19 +2,15 @@ import re
 from asyncio.futures import Future
 from enum import Enum, auto
 from functools import partial
-from io import BytesIO
 from typing import NamedTuple, List, Dict
 
 import requests
 from PIL import Image
-from pygments import highlight
-from pygments.formatters.img import ImageFormatter
-from pygments.lexers.python import PythonLexer
 from telegram.callbackquery import CallbackQuery
 from telegram.ext import CommandHandler, MessageHandler, Filters, RegexHandler
 from telegram.ext.callbackqueryhandler import CallbackQueryHandler
 from telegram.ext.conversationhandler import ConversationHandler
-from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
+from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton as Button
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 from telegram.message import Message
 from telegram.parsemode import ParseMode
@@ -22,13 +18,13 @@ from telegram.replykeyboardmarkup import ReplyKeyboardMarkup
 from telegram.replykeyboardremove import ReplyKeyboardRemove
 from telegram.update import Update
 
-from config import HOME_LINK, CODE_FONT
+from config import HOME_LINK
 from database.LyceumUser import LyceumUser
 from lyceum_api import get_check_queue
 from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict, VerdictType, Verdict
 from methods.auth import get_user
 from methods.start import reply_markup as greeting_markup
-from methods.style import hl_code, default_style
+from methods.style import hl_code, Style
 
 FLOATS = r'(\d+(?:.\d+)?)'
 
@@ -66,6 +62,8 @@ def send_msg_by_chunks(msg: Message,
 
 def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
     user = get_user(update.message)
+    # TODO: store in database
+    user_data.setdefault('style', Style())
 
     if not user:
         update.message.reply_text('Not logged in')
@@ -102,7 +100,7 @@ def handle_hw(bot, update: Update, user_data, prev_task: QueueTask=None):
     tasks = [('task#' + str(t.id),
               '{} -- {}'.format(t.task_title, t.student_name))
              for t in q[:7]]
-    keyboard = [[InlineKeyboardButton(t, callback_data=i)]
+    keyboard = [[Button(t, callback_data=i)]
                 for i, t in tasks]
 
     markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
@@ -128,6 +126,7 @@ def on_choose(bot, update: Update, user_data):
     tid = int(tid)
     tasks: Tasks = user_data['tasks']
     task: QueueTask = tasks.mapping.get(tid)
+    style: Style = user_data['style']
 
     if not task:
         return ConversationHandler.END
@@ -165,11 +164,12 @@ def on_choose(bot, update: Update, user_data):
         r = requests.get(pyfiles[-1])
         r.encoding = 'utf-8'
 
-        text = ('Автор: {}\nРешение:\n'
-                '```\n{}\n```'.format(stud_name, r.text))
-        descr_kb[0] = [InlineKeyboardButton('Загрузить решение с подсветкой',
-                                            callback_data='get_img')]
+        text = 'Автор: {}'.format(stud_name)
         user_data['solution'] = r.text
+        if style.show_text:
+            text += '\nРешение:\n```\n{}\n```'.format(r.text)
+            descr_kb[0] = [Button('Загрузить решение с подсветкой',
+                                  callback_data='get_img')]
 
     mark_text = '\n\nОценка: {:g} из {:g}'.format(mark, max_mark)
     query.message.reply_text(descr + task_url + mark_text,
@@ -181,11 +181,33 @@ def on_choose(bot, update: Update, user_data):
                                    one_time_keyboard=True,
                                    resize_keyboard=True)
 
-    send_msg_by_chunks(query.message, text, '\n',
-                       parse_mode=ParseMode.MARKDOWN,
-                       keyboard=keyboard)
+    if pyfiles and not style.show_text:
+        reply_with_code(query.message, user_data, text, keyboard)
+    else:
+        send_msg_by_chunks(query.message, text, '\n',
+                           parse_mode=ParseMode.MARKDOWN,
+                           keyboard=keyboard)
+
 
     return State.task_process
+
+
+def reply_with_code(msg: Message, user_data, caption=None, kbd=None):
+    task: QueueTask = user_data['task']
+    code: str = user_data['solution']
+
+    img = hl_code(code, task.id, user_data)
+
+    reply = msg.reply_document
+    if user_data['style'].format in ['png', 'jpg']:
+        im = Image.open(img)
+        width, height = im.size
+        img.seek(0)
+
+        if max(width, height) <= 1280:
+            reply = msg.reply_photo
+
+    reply(img, caption=caption, reply_markup=kbd)
 
 
 def on_get_img(bot, update: Update, user_data):
@@ -194,24 +216,7 @@ def on_get_img(bot, update: Update, user_data):
     if query.data != 'get_img':
         return State.task_process
 
-    task: QueueTask = user_data['task']
-    code: str = user_data['solution']
-
-    img = hl_code(code, task.id, user_data)
-
-    msg: Message = query.message
-    style = user_data.get('style') or default_style
-    if style and style.format in ['png', 'jpg']:
-        im = Image.open(img)
-        width, height = im.size
-        img.seek(0)
-
-        if max(width, height) <= 1280:
-            msg.reply_photo(img)
-        else:
-            msg.reply_document(img)
-    else:
-        msg.reply_document(img)
+    reply_with_code(query.message, user_data)
     return State.task_process
 
 

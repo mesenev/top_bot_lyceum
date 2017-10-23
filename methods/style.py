@@ -35,11 +35,13 @@ class Style(SimpleNamespace):
     format = 'png'
     font = CODE_FONT
     color_scheme = 'default'
+    show_text = True
 
     def __str__(self):
-        return 'Формат: {}\nШрифт: {}\nСхема: {}'.format(self.format,
-                                                         self.font,
-                                                         self.color_scheme)
+        fmt = ('Формат: {}\nШрифт: {}\nСхема: {}'
+               '\nВыводить код текстом: {}')
+        return fmt.format(self.format, self.font, self.color_scheme,
+                          'да' if self.show_text else 'нет')
 
 
 default_style = Style()
@@ -99,6 +101,7 @@ ready_keyboard = [[Button('Готово', callback_data='style#ready#ready')],
                   [Button('Посмотреть, как получилось',
                           callback_data='style#ready#show')]]
 
+keyboard += [[Button('Показывать текст', callback_data='style#text#')]]
 keyboard += ready_keyboard
 
 COVER = 'Потыкайте на кнопки ниже, а когда надоест, нажмите "Готово".\n'
@@ -131,6 +134,8 @@ def on_choose(bot, update: Update, user_data):
     elif arg == 'ready' and name == 'show':
         code = open('tests/test_python_code.testpy').read()
         msg.reply_document(hl_code(code, 'test', user_data))
+    elif arg == 'text':
+        style.show_text = not style.show_text
 
     text = COVER + str(style)
     if arg == 'ready' and name == 'ready':
