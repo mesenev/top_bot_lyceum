@@ -28,7 +28,7 @@ from lyceum_api import get_check_queue
 from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict, VerdictType, Verdict
 from methods.auth import get_user
 from methods.start import reply_markup as greeting_markup
-from methods.style import hl_code
+from methods.style import hl_code, default_style
 
 FLOATS = r'(\d+(?:.\d+)?)'
 
@@ -196,18 +196,20 @@ def on_get_img(bot, update: Update, user_data):
 
     task: QueueTask = user_data['task']
     code: str = user_data['solution']
-    img = BytesIO(highlight(code,
-                            PythonLexer(),
-                            ImageFormatter(font_name=CODE_FONT)))
-    img.name = 'code_{}.png'.format(task.id)
 
-    im = Image.open(img)
-    width, height = im.size
-    img.seek(0)
+    img = hl_code(code, task.id, user_data)
 
     msg: Message = query.message
-    if max(width, height) <= 1280:
-        msg.reply_photo(img)
+    style = user_data.get('style') or default_style
+    if style and style.format in ['png', 'jpg']:
+        im = Image.open(img)
+        width, height = im.size
+        img.seek(0)
+
+        if max(width, height) <= 1280:
+            msg.reply_photo(img)
+        else:
+            msg.reply_document(img)
     else:
         msg.reply_document(img)
     return State.task_process
@@ -284,7 +286,7 @@ def on_mark(bot, update: Update, user_data):
 
 def on_test_hl(bot, update: Update, user_data):
     code = open('tests/test_python_code.testpy').read()
-    update.message.reply_document(hl_code(code, user_data))
+    update.message.reply_document(hl_code(code, 'test', user_data))
 
 
 test_highlight_handler = CommandHandler('testhl', on_test_hl,

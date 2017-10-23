@@ -47,7 +47,7 @@ default_style = Style()
 formats = 'html jpeg png svg'.split()
 
 
-def hl_code(code, user_data):
+def hl_code(code, name, user_data):
     style: Style = user_data.get('style') or default_style
 
     formatter = find_formatter_class(style.format)
@@ -79,7 +79,7 @@ def hl_code(code, user_data):
     if isinstance(highlighted, str):
         highlighted = highlighted.encode()
     img = BytesIO(highlighted)
-    img.name = 'code_test.' + style.format
+    img.name = 'code_{}.{}'.format(name, style.format)
 
     return img
 
@@ -130,7 +130,7 @@ def on_choose(bot, update: Update, user_data):
         setattr(style, arg, name)
     elif arg == 'ready' and name == 'show':
         code = open('tests/test_python_code.testpy').read()
-        msg.reply_document(hl_code(code, user_data))
+        msg.reply_document(hl_code(code, 'test', user_data))
 
     text = COVER + str(style)
     if arg == 'ready' and name == 'ready':
