@@ -22,7 +22,7 @@ from telegram.parsemode import ParseMode
 from telegram.update import Update
 
 from config import CODE_FONT
-from config.config_default import AVAILABLE_FONTS, AVAILABLE_SCHEMES
+from config import AVAILABLE_FONTS, AVAILABLE_SCHEMES
 from methods import start
 
 
