@@ -1,11 +1,8 @@
 from telegram.ext import CommandHandler, MessageHandler, Filters
 
-from . import auth
-from . import debug
-from . import get_top
-from . import homeworks
-from . import mojno
-from . import start
+from . import (start, auth, debug,
+               get_top, homeworks, mojno,
+               style,)
 
 METHODS = [
     CommandHandler('start', start.on_start),
@@ -15,5 +12,7 @@ METHODS = [
     CommandHandler('top-activate', get_top.top_activate),
     CommandHandler('top-deactivate', get_top.top_deactivate),
     auth.conv_handler,
-    homeworks.conv_handler
+    homeworks.conv_handler,
+    homeworks.test_highlight_handler,
+    style.conv_handler
 ]

@@ -10,6 +10,14 @@ NUMBER_OF_KIDS = 5
 COOLDOWN_FOR_LIST = datetime.timedelta(hours=3)
 TIMEZONE = pytz.timezone('Asia/Vladivostok')
 CODE_FONT = 'DejaVu Sans Mono'
+AVAILABLE_FONTS = ['DejaVu Sans Mono']
+
+AVAILABLE_SCHEMES = ['default', 'emacs', 'friendly', 'colorful', 'autumn',
+                     'murphy', 'manni', 'monokai', 'perldoc', 'pastie',
+                     'borland', 'trac', 'native', 'fruity', 'bw',
+                     'vim', 'vs', 'tango', 'rrt', 'xcode', 'igor',
+                     'algol', 'algol_nu', 'arduino', 'abap', 'rainbow_dash',
+                     'paraiso-light', 'paraiso-dark', 'lovelace',]
 
 
 TITLES_LIST = [

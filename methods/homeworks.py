@@ -14,7 +14,6 @@ from telegram.callbackquery import CallbackQuery
 from telegram.ext import CommandHandler, MessageHandler, Filters, RegexHandler
 from telegram.ext.callbackqueryhandler import CallbackQueryHandler
 from telegram.ext.conversationhandler import ConversationHandler
-from telegram.ext.dispatcher import Dispatcher
 from telegram.inline.inlinekeyboardbutton import InlineKeyboardButton
 from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 from telegram.message import Message
@@ -29,6 +28,7 @@ from lyceum_api import get_check_queue
 from lyceum_api.issue import QueueTask, loop, get_issue_async, issue_send_verdict, VerdictType, Verdict
 from methods.auth import get_user
 from methods.start import reply_markup as greeting_markup
+from methods.style import hl_code
 
 FLOATS = r'(\d+(?:.\d+)?)'
 
@@ -282,13 +282,14 @@ def on_mark(bot, update: Update, user_data):
     return State.task_process
 
 
-def add_handlers(dispatcher: Dispatcher):
-    dispatcher.add_handler(CommandHandler('hw', handle_hw,
-                                          Filters.private,
-                                          pass_user_data=True))
-    dispatcher.add_handler(CallbackQueryHandler(on_choose,
-                                                pass_user_data=True))
+def on_test_hl(bot, update: Update, user_data):
+    code = open('tests/test_python_code.testpy').read()
+    update.message.reply_document(hl_code(code, user_data))
 
+
+test_highlight_handler = CommandHandler('testhl', on_test_hl,
+                                        Filters.private,
+                                        pass_user_data=True)
 
 hw_handler = CommandHandler('hw', handle_hw,
                             Filters.private,
