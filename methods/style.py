@@ -124,7 +124,9 @@ def on_choose(bot, update: Update, user_data):
 
     cmd, arg, name = query.data.split('#')
     if cmd != 'style':
-        return
+        msg.reply_text('Такие кнопки сейчас не работают. '
+                       'Выхожу из диалога...')
+        return ConversationHandler.END
 
     style: Style = user_data['style']
     style_name = style.color_scheme + '_' + style.font.replace(' ', '_')
