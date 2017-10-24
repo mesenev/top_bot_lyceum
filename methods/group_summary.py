@@ -2,7 +2,7 @@ from collections import defaultdict, Counter
 import requests
 from telegram import Bot, Update
 
-from config import config
+from config import config, HOME_LINK
 from database import LyceumUser
 from lyceum_api.parser import Parser, Tag
 from methods.auth import get_user
@@ -13,21 +13,24 @@ def get_summary(bot: Bot, update: Update):
     if not user or not user.is_teacher:
         update.message.reply_text('Очевидно, вы должны быть преподавателм и авторизованы')
     bot.send_message(chat_id=update.message.chat_id, text="Собираем статистику на группу...")
-    for course in set(user.course_links):
-        lesson_links = get_links_to_available_lessons(config.DATA_URL.format(course), user.token)
+    for course in set(user.course_links.split(',')):
+        lesson_links = get_links_to_available_lessons(config.DATA_URL.format(course), user.sid)
         bot.send_message(chat_id=update.message.chat_id,
                          text="Список пройденных по курсу {} уроков получен. "
-                         "Их всего {}. Обработка может занять некоторое время. Работаем..."
-                         .format(len(lesson_links), course))
-        overall = defaultdict()
+                         "Их всего {}. Обработка может занять некоторое время. За работу..."
+                         .format(course, len(lesson_links)))
+        overall = defaultdict(Counter)
         for link in lesson_links:
-            for _ in get_lesson_data(link, user.token):
-                overall.get(_[0], default=Counter()).update(_[1])
+            _ = get_lesson_data(HOME_LINK + link, user.sid)
+            for student, data in _:
+                overall[student].update(data)
         msg = ''
-        for idx, i in overall.items():
+        idx = 1
+        for i in overall.items():
             _ = i[1]['done'], i[1]['failed'], i[1]['pending'], i[1]['untouched']
-            msg += str(idx+1) + '{}: D:{} F:{} P:{} U:{}'.format(i[0], i[1]['done'], *_)
-            bot.send_message(chat_id=update.message.chat_id, text=msg)
+            msg += '{}. {}: D:{} F:{} P:{} U:{}\n'.format(idx, i[0], *_)
+            idx += 1
+        bot.send_message(chat_id=update.message.chat_id, text=msg)
     return
 
 
@@ -82,7 +85,10 @@ class LessonParser(Parser):
         return {'done': 0, 'failed': 0, 'pending': 0, 'untouched': 0}
 
     def on_feed(self):
-        pass
+        self.students_data = []
+        self.in_tr = False
+        self.is_student_full_name_tag = False
+        self.to_add = None
 
     def on_starttag(self, t: Tag):
         if t.name == 'tr':
