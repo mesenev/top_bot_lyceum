@@ -1,5 +1,12 @@
 # This is the snippet for testing font style and color scheme
 
+"""Test code for syntax highlighting!"""
+
+
+def print_style(style):
+    print(style)
+
+
 f = open('input.txt')
 N = f.readline()
 d = {}
