@@ -7,6 +7,7 @@ import pygments.style
 from PIL.ImageColor import getrgb
 from pygments import highlight
 from pygments.formatters import find_formatter_class
+from pygments.formatters.img import FontNotFound
 from pygments.lexers.python import PythonLexer
 from pygments.styles import get_style_by_name
 from telegram.callbackquery import CallbackQuery
@@ -126,6 +127,7 @@ def on_choose(bot, update: Update, user_data):
         return
 
     style: Style = user_data['style']
+    style_name = style.color_scheme + '_' + style.font.replace(' ', '_')
 
     next_state = State.choice
 
@@ -133,7 +135,12 @@ def on_choose(bot, update: Update, user_data):
         setattr(style, arg, name)
     elif arg == 'ready' and name == 'show':
         code = open('tests/test_python_code.testpy').read()
-        msg.reply_document(hl_code(code, 'test', user_data))
+        try:
+            msg.reply_document(hl_code(code, style_name, user_data))
+        except FontNotFound:
+            msg.reply_text('Вот это да! Шрифт не найден.'
+                           '\nМожете сообщить разработчикам о проблеме.'
+                           '\nА пока попробуйте другой шрифт.')
     elif arg == 'text':
         style.show_text = not style.show_text
 
