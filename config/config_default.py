@@ -9,6 +9,7 @@ P_URL = ""
 LOGIN_URL = ""
 LOG_CHAT_ID = ""
 DATA_URL = ""
+TAIL = ""
 
 # LEAVE IT AS IS
 CUPS_OF = 28
