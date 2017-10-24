@@ -121,6 +121,8 @@ def on_choose(bot, update: Update, user_data):
 
     task, tid = query.data.split('#')[:2]
     if task != 'task':
+        query.message.reply_text('Такие кнопки сейчас не работают. '
+                                 'Выхожу из диалога...')
         return ConversationHandler.END
 
     tid = int(tid)
