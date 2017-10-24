@@ -1,17 +1,22 @@
 import requests
 from telegram import Bot, Update
 
+from config import config
 from database import LyceumUser
 from lyceum_api.parser import Parser, Tag
 from methods.auth import get_user
 
 
 def get_status(bot: Bot, update: Update):
-    user = get_user(update.message)
+    user:LyceumUser = get_user(update.message)
     if not user or not user.is_teacher:
         update.message.reply_text('Очевидно, вы должны быть преподавателм и авторизованы')
     bot.send_message(chat_id=update.message.chat_id, text="Собираем статистику на группу...")
-    lesson_links = get_links_to_available_lessons(user)
+    for link in user.course_links:
+        lesson_links = get_links_to_available_lessons(config.DATA_URL.format(link), user.token)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Список пройденных по курсу {} "
+                              "уроков получен. Обрабатываю...".format(link))
 
     return
 
