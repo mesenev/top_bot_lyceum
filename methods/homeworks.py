@@ -188,7 +188,6 @@ def on_choose(bot, update: Update, user_data):
                            parse_mode=ParseMode.MARKDOWN,
                            keyboard=keyboard)
 
-
     return State.task_process
 
 
