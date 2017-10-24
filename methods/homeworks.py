@@ -119,7 +119,7 @@ ACCEPT_RE = ('{}'.join(map(re.escape,
 def on_choose(bot, update: Update, user_data):
     query: CallbackQuery = update.callback_query
 
-    task, tid = query.data.split('#')
+    task, tid = query.data.split('#')[:2]
     if task != 'task':
         return ConversationHandler.END
 
