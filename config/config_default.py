@@ -2,7 +2,7 @@ import datetime
 
 import pytz
 
-CUPS_OF = 28
+CUPS_OF = 111
 LOGIN = ''
 PASSWORD = ''
 LOG_CHAT_ID = ''

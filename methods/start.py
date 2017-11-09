@@ -10,13 +10,13 @@ reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard,
 
 
 # TODO: Исправить приветствие. Его могут видеть как студенты так и
-# преподаватели.
 def on_start(bot, update):
     update.message.reply_text("Велкам! Для начала залогиньтесь "
                               "(если вы ещё не)."
                               " Потом проверьте домашки. "
-                              "/top пока не работает, "
-                              "но скоро заработает.",
+                              "Или сделайте их."
+                              "/top работает, "
+                              "и будет работать.",
                               reply_markup=reply_markup)
 
 
