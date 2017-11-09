@@ -7,7 +7,7 @@ def send_msg(bot, update):
     message = ''
     if coming_msg == 'приветбот' or coming_msg == 'приветствуюбот':
         message = greeting(update)
-    if 'можно' in coming_msg:
+    if 'можно' in coming_msg.split():
         message = mojno(update)
     if message:
         bot.send_message(chat_id=update.message.chat_id, text=message)
