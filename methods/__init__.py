@@ -12,7 +12,7 @@ METHODS = [
     CommandHandler('top-activate', get_top.top_activate),
     CommandHandler('top-deactivate', get_top.top_deactivate),
     CommandHandler('summary', group_summary.get_summary),
-    CommandHandler('answers', cites),
+    CommandHandler('answers', cites.answers),
     auth.conv_handler,
     homeworks.conv_handler,
     style.conv_handler
