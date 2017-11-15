@@ -1,11 +1,18 @@
 import datetime
-
 import pytz
 
+
+#  OVERRIDE IT IN CONFIG.PY
+BOT_TOKEN = ""
+HOME_LINK = ""
+P_URL = ""
+LOGIN_URL = ""
+LOG_CHAT_ID = ""
+DATA_URL = ""
+TAIL = ""
+
+# LEAVE IT AS IS
 CUPS_OF = 28
-LOGIN = ''
-PASSWORD = ''
-LOG_CHAT_ID = ''
 NUMBER_OF_KIDS = 5
 COOLDOWN_FOR_LIST = datetime.timedelta(hours=3)
 TIMEZONE = pytz.timezone('Asia/Vladivostok')

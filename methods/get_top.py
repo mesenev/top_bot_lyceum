@@ -1,10 +1,11 @@
 import random
 
+from collections import defaultdict
 from telegram import Update, Bot
 from config import *
 from database import LyceumUser, ActiveTop
 from methods.common import get_common_data_from_web
-last_update = datetime.datetime.now() - datetime.timedelta(hours=24)
+last_update = defaultdict(lambda: datetime.datetime.now() - datetime.timedelta(hours=24))
 
 
 def _current_time():
@@ -23,17 +24,18 @@ def get_top(bot, update, **kwargs):
     checkpass = kwargs['checkpass'] if 'checkpass' in kwargs else False
     if update.message.from_user.id in CONTRIBUTORS:
         checkpass = True
-    if not checkpass and local_time.hour < 6 or local_time.hour > 23:
-        answ = random.choice(NIGHTTIME_MESSAGES)
-        return answ
+    #  TODO: Define local night time for chat (based on lecturer data)
+    # if not checkpass and local_time.hour < 6 or local_time.hour > 23:
+    #     answ = random.choice(NIGHTTIME_MESSAGES)
+    #     return answ
 
-    if not checkpass and last_update + COOLDOWN_FOR_LIST > datetime.datetime.now():
+    if not checkpass and last_update[chat_entity.id] + COOLDOWN_FOR_LIST > datetime.datetime.now():
         answ = random.choice(COOLDOWN_MSGS)
         return answ
 
     bot.send_message(chat_id=update.message.chat_id, text=random.choice(PREPARE_MESSAGE))
     if update.message.from_user.id not in CONTRIBUTORS:
-        last_update = datetime.datetime.now()
+        last_update[chat_entity.id] = datetime.datetime.now()
     kids = get_common_data_from_web(chat_entity)
     if kids == -1:
         bot.send_message(chat_id=update.message.chat_id, text='Ошибка авторизации. Выключаюсь.')
