@@ -1,7 +1,7 @@
 # top_bot_lyceum
 Telegram bot for programming cources support
 
-#Commands
+# Commands
 /top - show top-5 students in group
 
 /login - log in
