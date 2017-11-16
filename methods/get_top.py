@@ -37,11 +37,12 @@ def get_top(bot, update, **kwargs):
     if update.message.from_user.id not in CONTRIBUTORS:
         last_update[chat_entity.id] = datetime.datetime.now()
     kids = get_common_data_from_web(chat_entity)
-    if kids == -1:
+    if kids == 1:
         bot.send_message(chat_id=update.message.chat_id, text='Ошибка авторизации. Выключаюсь.')
         bot.send_message(chat_id=chat_entity.tutor.tgid, text='Ошибка авторизации в чате %s'
                                                               % update.message.chat.title)
         chat_entity.delete_instance()
+        return
     answ = _create_top(kids)
     bot.send_message(chat_id=update.message.chat_id, text=answ)
 

@@ -12,7 +12,7 @@ DATA_URL = ""
 TAIL = ""
 
 # LEAVE IT AS IS
-CUPS_OF = 28
+CUPS_OF = 111
 NUMBER_OF_KIDS = 5
 COOLDOWN_FOR_LIST = datetime.timedelta(hours=3)
 TIMEZONE = pytz.timezone('Asia/Vladivostok')
@@ -54,8 +54,8 @@ COOLDOWN_MSGS = [
     'Ещё рано',
     'Терпение, терпение',
 ]
-PREPARE_MESSAGE =[
-    "Давайте позвоним в яндекс",
+PREPARE_MESSAGE = [
+    "Давайте позвоним туда",
     "Сейчас узнаем"
 ]
 
