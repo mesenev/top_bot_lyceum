@@ -1,10 +1,15 @@
 import logging
 import logging.config
 import os
+import pprint
+import site
 import sys
 import traceback
 
+from telegram.parsemode import ParseMode
+
 from config import LOG_CHAT_ID
+from config.config_default import CONTRIBUTORS
 
 excepthooks = []
 
@@ -70,13 +75,29 @@ def setup_logger():
 def setup_dispatcher_logging(dispatcher):
     logger = logging.getLogger(__name__)
 
+    def is_site_module(filename: str):
+        pkgs = site.getsitepackages()
+        return any(filename.startswith(p) for p in pkgs)
+
+    def format_tb(exc):
+        tb = traceback.extract_tb(exc.__traceback__)
+        for i in 0, -1:
+            while tb and is_site_module(tb[i].filename):
+                tb.pop(i)
+        return ''.join(tb.format())
+
     def error(bot, update, err):
-        logger.warning('Update "%s" caused error "%s"' % (update, err))
+        ustr = pprint.pformat(update.to_dict(), width=120)
+        logger.exception(f'Update: \n{ustr}')
         if update:
-            message = update.message or update.callback_query.message
+            qmsg = update.callback_query and update.callback_query.message
+            message = update.mesage or qmsg
             if message:
                 message.reply_text('Произошла какая-то ошибка. '
                                    'Мы уже работаем над этим...')
+                if message.from_user.id in CONTRIBUTORS:
+                    message.reply_text(f"```{format_tb(err)}{err}```",
+                                       parse_mode=ParseMode.MARKDOWN)
 
     # This hooks telegram api-level errors
     dispatcher.add_error_handler(error)
