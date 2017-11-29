@@ -73,7 +73,7 @@ ANSWERS = [
     'Что толку в ответах, если они не получены самостоятельно?'
 ]
 
-CONTRIBUTORS = [
+CONTRIBUTORS = {
     102660981,  # mesenev
     82204126,   # malyavin
-]
+}
