@@ -87,17 +87,20 @@ def setup_dispatcher_logging(dispatcher):
         return ''.join(tb.format())
 
     def error(bot, update, err):
+        if not update:
+            logger.exception('Unexpected Telegram Api error!')
+            return
+
         ustr = pprint.pformat(update.to_dict(), width=120)
         logger.exception(f'Update: \n{ustr}')
-        if update:
-            qmsg = update.callback_query and update.callback_query.message
-            message = update.mesage or qmsg
-            if message:
-                message.reply_text('Произошла какая-то ошибка. '
-                                   'Мы уже работаем над этим...')
-                if message.from_user.id in CONTRIBUTORS:
-                    message.reply_text(f"```{format_tb(err)}{err}```",
-                                       parse_mode=ParseMode.MARKDOWN)
+        qmsg = update.callback_query and update.callback_query.message
+        message = update.mesage or qmsg
+        if message:
+            message.reply_text('Произошла какая-то ошибка. '
+                               'Мы уже работаем над этим...')
+            if message.from_user.id in CONTRIBUTORS:
+                message.reply_text(f"```{format_tb(err)}{err}```",
+                                   parse_mode=ParseMode.MARKDOWN)
 
     # This hooks telegram api-level errors
     dispatcher.add_error_handler(error)
