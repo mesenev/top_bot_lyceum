@@ -108,4 +108,4 @@ class ProfileParser(Parser):
     def get_links(self):
         import re
 
-        return [re.match('.*?([0-9]+)$', x).group(1) for x in self.course_links if x[0] != '#']
+        return set([re.match('.*?([0-9]+)$', x).group(1) for x in self.course_links if x[0] != '#'])

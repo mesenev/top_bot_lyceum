@@ -64,7 +64,8 @@ def _create_top(kids_list):
 
 
 # noinspection PyTypeChecker,PyCallByClass
-def top_activate(bot: Bot, update: Update, *args):
+def top_activate(bot: Bot, update: Update):
+    args = update.message.text.split()[1:]
     author: LyceumUser = LyceumUser.get_or_null(LyceumUser, tgid=update.message.from_user.id)
     chat_entity = ActiveTop.get_or_null(ActiveTop, chat_id=update.message.chat_id)
     if chat_entity:
